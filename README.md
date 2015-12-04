@@ -26,25 +26,22 @@ The build produces two JAR files:
 
 ## Library ##
 
-Constructing an instance of Apache Spark function class `org.jpmml.spark.PMMLFunction` based on a PMML document in local filesystem:
+Constructing an instance of Spark ML transformer class `org.jpmml.spark.PMMLPredictionModel` based on a PMML document in local filesystem:
 ```java
 File pmmlFile = ...;
-Evaluator evaluator = PMMLFunctionUtil.createEvaluator(pmmlFile);
-PMMLFunction pmmlFunction = new PMMLFunction(evaluator);
+Evaluator evaluator = EvaluatorUtil.createEvaluator(pmmlFile);
+PMMLPredictionModel pmmlModel = new PMMLPredictionModel(evaluator);
 ```
 
-This function class is designed to work with Spark SQL. In brief, it accepts an input data record in the form of `org.apache.spark.sql.Row`, applies the scoring function to it, and produces an output data record in the form of `org.apache.spark.sql.Row`. The detailed description of data records can be retrieved using methods `PMMLFunction#getInputSchema()` and `PMMLFunction#getOutputSchema()`, respectively.
+This class adheres to the specification of the [`org.apache.spark.ml.PredictionModel`] (https://spark.apache.org/docs/latest/api/java/org/apache/spark/ml/PredictionModel.html) transformer class.
 
 Scoring data:
 ```java
-SQLContext sqlContext = ...;
-DataFrame inputDataFrame = ...;
-JavaRDD<Row> inputRDD = inputDataFrame.toJavaRDD();
-JavaRDD<Row> outputRDD = inputRDD.map(pmmlFunction);
-DataFrame outputDataFrame = sqlContext.createDataFrame(outputRDD, pmmlFunction.getOutputSchema());
+DataFrame dataFrame = ...;
+DataFrame transformedDataFrame = pmmlModel.transform(dataFrame);
 ```
 
-A note about building and packaging JPMML-Spark applications. The JPMML-Evaluator library depends on JPMML-Model and Google Guava library versions that are in conflict with the ones that are bundled with Apache Spark and/or Apache Hadoop. It is easy to solve this conflict by relocating JPMML-Evaluator library dependencies to a different namespace using the [Apache Maven Shade Plugin] (https://maven.apache.org/plugins/maven-shade-plugin/). Please see the JPMML-Spark example application for a worked out example.
+**A note about building and packaging JPMML-Spark applications**. The JPMML-Evaluator library depends on JPMML-Model and Google Guava library versions that are in conflict with the ones that are bundled with Apache Spark and/or Apache Hadoop. This conflict can be easily solved by relocating JPMML-Evaluator library dependencies to a different namespace using the [Apache Maven Shade Plugin] (https://maven.apache.org/plugins/maven-shade-plugin/). Please see the JPMML-Spark example application for a worked out example.
 
 ## Example application ##
 

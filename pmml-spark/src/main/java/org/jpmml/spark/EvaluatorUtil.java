@@ -22,19 +22,25 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.transform.Source;
 
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.RowFactory;
+import org.apache.spark.sql.types.DataType;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructType;
 import org.dmg.pmml.DataField;
-import org.dmg.pmml.DataType;
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.OutputField;
 import org.dmg.pmml.PMML;
 import org.jpmml.evaluator.Evaluator;
+import org.jpmml.evaluator.FieldValue;
 import org.jpmml.evaluator.ModelEvaluator;
 import org.jpmml.evaluator.ModelEvaluatorFactory;
 import org.jpmml.evaluator.OutputUtil;
@@ -45,9 +51,9 @@ import org.jpmml.model.visitors.LocatorTransformer;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-public class PMMLFunctionUtil {
+public class EvaluatorUtil {
 
-	private PMMLFunctionUtil(){
+	private EvaluatorUtil(){
 	}
 
 	static
@@ -73,6 +79,40 @@ public class PMMLFunctionUtil {
 		ModelEvaluator<?> modelEvaluator = modelEvaluatorFactory.newModelManager(pmml);
 
 		return modelEvaluator;
+	}
+
+	static
+	public Row evaluate(Evaluator evaluator, Row row, StructType schema){
+		Map<FieldName, FieldValue> arguments = new LinkedHashMap<>();
+
+		List<FieldName> activeFields = evaluator.getActiveFields();
+		for(FieldName activeField : activeFields){
+			int index = schema.fieldIndex(activeField.getValue());
+
+			FieldValue activeValue = evaluator.prepare(activeField, row.get(index));
+
+			arguments.put(activeField, activeValue);
+		}
+
+		Map<FieldName, ?> result = evaluator.evaluate(arguments);
+
+		List<Object> values = new ArrayList<>();
+
+		List<FieldName> targetFields = evaluator.getTargetFields();
+		for(FieldName targetField : targetFields){
+			Object targetValue = result.get(targetField);
+
+			values.add(org.jpmml.evaluator.EvaluatorUtil.decode(targetValue));
+		}
+
+		List<FieldName> outputFields = evaluator.getOutputFields();
+		for(FieldName outputField : outputFields){
+			Object outputValue = result.get(outputField);
+
+			values.add(outputValue);
+		}
+
+		return RowFactory.create(values.toArray());
 	}
 
 	static
@@ -104,12 +144,12 @@ public class PMMLFunctionUtil {
 		for(FieldName outputField : outputFields){
 			OutputField output = evaluator.getOutputField(outputField);
 
-			DataType dataType;
+			org.dmg.pmml.DataType dataType;
 
 			try {
 				dataType = OutputUtil.getDataType(output, (ModelEvaluator<?>)evaluator);
 			} catch(TypeAnalysisException tae){
-				dataType = DataType.STRING;
+				dataType = org.dmg.pmml.DataType.STRING;
 			}
 
 			schema = schema.add(outputField.getValue(), translateDataType(dataType), false);
@@ -119,7 +159,7 @@ public class PMMLFunctionUtil {
 	}
 
 	static
-	private org.apache.spark.sql.types.DataType translateDataType(DataType dataType){
+	public DataType translateDataType(org.dmg.pmml.DataType dataType){
 
 		switch(dataType){
 			case STRING:

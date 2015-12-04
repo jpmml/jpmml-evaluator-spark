@@ -21,12 +21,10 @@ package org.jpmml.spark;
 import java.io.File;
 
 import org.apache.spark.SparkConf;
-import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.DataFrame;
 import org.apache.spark.sql.DataFrameReader;
 import org.apache.spark.sql.DataFrameWriter;
-import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SQLContext;
 import org.jpmml.evaluator.Evaluator;
 
@@ -41,9 +39,7 @@ public class Main {
 			System.exit(-1);
 		}
 
-		Evaluator evaluator = PMMLFunctionUtil.createEvaluator(new File(args[0]));
-
-		PMMLFunction pmmlFunction = new PMMLFunction(evaluator);
+		Evaluator evaluator = EvaluatorUtil.createEvaluator(new File(args[0]));
 
 		SparkConf conf = new SparkConf();
 
@@ -57,11 +53,9 @@ public class Main {
 
 		DataFrame inputDataFrame = reader.load(args[1]);
 
-		JavaRDD<Row> inputRDD = inputDataFrame.toJavaRDD();
+		PMMLPredictionModel pmmlPredictor = new PMMLPredictionModel(evaluator);
 
-		JavaRDD<Row> outputRDD = inputRDD.map(pmmlFunction);
-
-		DataFrame outputDataFrame = sqlContext.createDataFrame(outputRDD, pmmlFunction.getOutputSchema());
+		DataFrame outputDataFrame = pmmlPredictor.transform(inputDataFrame);
 
 		DataFrameWriter writer = outputDataFrame.write()
 			.format("com.databricks.spark.csv")

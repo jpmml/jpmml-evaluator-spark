@@ -18,19 +18,10 @@
  */
 package org.jpmml.spark;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.sql.Row;
-import org.apache.spark.sql.RowFactory;
 import org.apache.spark.sql.types.StructType;
-import org.dmg.pmml.FieldName;
 import org.jpmml.evaluator.Evaluator;
-import org.jpmml.evaluator.EvaluatorUtil;
-import org.jpmml.evaluator.FieldValue;
 
 public class PMMLFunction implements Function<Row, Row> {
 
@@ -50,7 +41,7 @@ public class PMMLFunction implements Function<Row, Row> {
 	 * Applies this scoring function to an input data record, producing an output data record.
 	 * </p>
 	 *
-	 * @param input An input data record.
+	 * @param row An input data record.
 	 * The layout of the input data record is specified by the {@link #getInputSchema() input schema} of this scoring function.
 	 * In practice, the ordering of values is not significant, because they are looked up by name. Extraneous values, if any, are ignored.
 	 *
@@ -61,44 +52,10 @@ public class PMMLFunction implements Function<Row, Row> {
 	 * @see #getOutputSchema()
 	 */
 	@Override
-	public Row call(Row input){
+	public Row call(Row row){
 		Evaluator evaluator = getEvaluator();
 
-		StructType schema = input.schema();
-
-		Map<FieldName, FieldValue> arguments = new LinkedHashMap<>();
-
-		List<FieldName> activeFields = evaluator.getActiveFields();
-		for(FieldName activeField : activeFields){
-			int index = schema.fieldIndex(activeField.getValue());
-			if(index < 0){
-				throw new IllegalArgumentException();
-			}
-
-			FieldValue activeValue = evaluator.prepare(activeField, input.get(index));
-
-			arguments.put(activeField, activeValue);
-		}
-
-		Map<FieldName, ?> result = evaluator.evaluate(arguments);
-
-		List<Object> row = new ArrayList<>();
-
-		List<FieldName> targetFields = evaluator.getTargetFields();
-		for(FieldName targetField : targetFields){
-			Object targetValue = result.get(targetField);
-
-			row.add(EvaluatorUtil.decode(targetValue));
-		}
-
-		List<FieldName> outputFields = evaluator.getOutputFields();
-		for(FieldName outputField : outputFields){
-			Object outputValue = result.get(outputField);
-
-			row.add(outputValue);
-		}
-
-		return RowFactory.create(row.toArray());
+		return EvaluatorUtil.evaluate(evaluator, row, row.schema());
 	}
 
 	/**
@@ -112,7 +69,7 @@ public class PMMLFunction implements Function<Row, Row> {
 		Evaluator evaluator = getEvaluator();
 
 		if(this.inputSchema == null){
-			this.inputSchema = PMMLFunctionUtil.createInputSchema(evaluator);
+			this.inputSchema = EvaluatorUtil.createInputSchema(evaluator);
 		}
 
 		return this.inputSchema;
@@ -130,7 +87,7 @@ public class PMMLFunction implements Function<Row, Row> {
 		Evaluator evaluator = getEvaluator();
 
 		if(this.outputSchema == null){
-			this.outputSchema = PMMLFunctionUtil.createOutputSchema(evaluator);
+			this.outputSchema = EvaluatorUtil.createOutputSchema(evaluator);
 		}
 
 		return this.outputSchema;
