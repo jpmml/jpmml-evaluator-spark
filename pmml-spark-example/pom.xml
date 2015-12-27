@@ -69,7 +69,7 @@
 							<relocations>
 								<relocation>
 									<pattern>com.google.common</pattern>
-									<shadedPattern>com.google.common18_0</shadedPattern>
+									<shadedPattern>com.google.common19_0</shadedPattern>
 								</relocation>
 								<relocation>
 									<pattern>org.dmg.pmml</pattern>

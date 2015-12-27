@@ -77,6 +77,7 @@ public class EvaluatorUtil {
 		ModelEvaluatorFactory modelEvaluatorFactory = ModelEvaluatorFactory.newInstance();
 
 		ModelEvaluator<?> modelEvaluator = modelEvaluatorFactory.newModelManager(pmml);
+		modelEvaluator.verify();
 
 		return modelEvaluator;
 	}
@@ -98,7 +99,7 @@ public class EvaluatorUtil {
 
 		List<Object> values = new ArrayList<>();
 
-		List<FieldName> targetFields = evaluator.getTargetFields();
+		List<FieldName> targetFields = org.jpmml.evaluator.EvaluatorUtil.getTargetFields(evaluator);
 		for(FieldName targetField : targetFields){
 			Object targetValue = result.get(targetField);
 
@@ -133,11 +134,11 @@ public class EvaluatorUtil {
 	public StructType createOutputSchema(Evaluator evaluator){
 		StructType schema = new StructType();
 
-		List<FieldName> targetFields = evaluator.getTargetFields();
+		List<FieldName> targetFields = org.jpmml.evaluator.EvaluatorUtil.getTargetFields(evaluator);
 		for(FieldName targetField : targetFields){
 			DataField dataField = evaluator.getDataField(targetField);
 
-			schema = schema.add(targetField.getValue(), translateDataType(dataField.getDataType()), false);
+			schema = schema.add(formatTargetName(targetField), translateDataType(dataField.getDataType()), false);
 		}
 
 		List<FieldName> outputFields = evaluator.getOutputFields();
@@ -156,6 +157,11 @@ public class EvaluatorUtil {
 		}
 
 		return schema;
+	}
+
+	static
+	public String formatTargetName(FieldName name){
+		return (name != null ? name.getValue() : "_default");
 	}
 
 	static
