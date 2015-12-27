@@ -18,31 +18,32 @@
  */
 package org.jpmml.spark;
 
-import org.apache.spark.api.java.function.Function;
-import org.apache.spark.sql.Row;
-import org.jpmml.evaluator.Evaluator;
+import org.apache.spark.sql.DataFrame;
+import org.apache.spark.sql.DataFrameReader;
+import org.apache.spark.sql.DataFrameWriter;
+import org.apache.spark.sql.SQLContext;
 
-public class PMMLFunction implements Function<Row, Row> {
+public class DataFrameUtil {
 
-	private Evaluator evaluator = null;
-
-
-	public PMMLFunction(Evaluator evaluator){
-		setEvaluator(evaluator);
+	private DataFrameUtil(){
 	}
 
-	@Override
-	public Row call(Row row){
-		Evaluator evaluator = getEvaluator();
+	static
+	public DataFrame loadCsv(SQLContext sqlContext, String path){
+		DataFrameReader reader = sqlContext.read()
+			.format("com.databricks.spark.csv")
+			.option("header", "true")
+			.option("inferSchema", "true");
 
-		return EvaluatorUtil.evaluate(evaluator, row);
+		return reader.load(path);
 	}
 
-	public Evaluator getEvaluator(){
-		return this.evaluator;
-	}
+	static
+	public void storeCsv(SQLContext sqlContext, DataFrame dataFrame, String path){
+		DataFrameWriter writer = dataFrame.write()
+			.format("com.databricks.spark.csv")
+		    .option("header", "true");
 
-	private void setEvaluator(Evaluator evaluator){
-		this.evaluator = evaluator;
+		writer.save(path);
 	}
 }

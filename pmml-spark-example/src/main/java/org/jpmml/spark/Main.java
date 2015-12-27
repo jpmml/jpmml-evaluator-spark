@@ -23,8 +23,6 @@ import java.io.File;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.DataFrame;
-import org.apache.spark.sql.DataFrameReader;
-import org.apache.spark.sql.DataFrameWriter;
 import org.apache.spark.sql.SQLContext;
 import org.jpmml.evaluator.Evaluator;
 
@@ -41,26 +39,18 @@ public class Main {
 
 		Evaluator evaluator = EvaluatorUtil.createEvaluator(new File(args[0]));
 
-		SparkConf conf = new SparkConf();
-
-		JavaSparkContext sparkContext = new JavaSparkContext(conf);
-
-		SQLContext sqlContext = new SQLContext(sparkContext);
-
-		DataFrameReader reader = sqlContext.read()
-			.format("com.databricks.spark.csv")
-			.option("header", "true");
-
-		DataFrame inputDataFrame = reader.load(args[1]);
-
 		PMMLPredictionModel pmmlPredictor = new PMMLPredictionModel(evaluator);
 
-		DataFrame outputDataFrame = pmmlPredictor.transform(inputDataFrame);
+		SparkConf conf = new SparkConf();
 
-		DataFrameWriter writer = outputDataFrame.write()
-			.format("com.databricks.spark.csv")
-		    .option("header", "true");
+		try(JavaSparkContext sparkContext = new JavaSparkContext(conf)){
+			SQLContext sqlContext = new SQLContext(sparkContext);
 
-		writer.save(args[2]);
+			DataFrame inputDataFrame = DataFrameUtil.loadCsv(sqlContext, args[1]);
+
+			DataFrame outputDataFrame = pmmlPredictor.transform(inputDataFrame);
+
+			DataFrameUtil.storeCsv(sqlContext, outputDataFrame, args[2]);
+		}
 	}
 }

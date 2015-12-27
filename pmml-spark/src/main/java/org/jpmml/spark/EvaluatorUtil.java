@@ -82,6 +82,24 @@ public class EvaluatorUtil {
 		return modelEvaluator;
 	}
 
+	/**
+	 * <p>
+	 * Applies the scoring function to an input data record, producing an output data record.
+	 * </p>
+	 *
+	 * @param row An input data record.
+	 * The ordering of values is not significant, because they are looked up by name. Extraneous values, if any, are ignored.
+	 *
+	 * @return An output data record.
+	 *
+	 * @see #createInputSchema(Evaluator)
+	 * @see #createOutputSchema(Evaluator)
+	 */
+	static
+	public Row evaluate(Evaluator evaluator, Row row){
+		return evaluate(evaluator, row, row.schema());
+	}
+
 	static
 	public Row evaluate(Evaluator evaluator, Row row, StructType schema){
 		Map<FieldName, FieldValue> arguments = new LinkedHashMap<>();
@@ -116,6 +134,13 @@ public class EvaluatorUtil {
 		return RowFactory.create(values.toArray());
 	}
 
+	/**
+	 * <p>
+	 * Returns the description of input fields.
+	 * </p>
+	 *
+	 * @see Evaluator#getActiveFields()
+	 */
 	static
 	public StructType createInputSchema(Evaluator evaluator){
 		StructType schema = new StructType();
@@ -130,6 +155,14 @@ public class EvaluatorUtil {
 		return schema;
 	}
 
+	/**
+	 * <p>
+	 * Returns the description of primary and secondary output fields.
+	 * </p>
+	 *
+	 * @see Evaluator#getTargetFields()
+	 * @see Evaluator#getOutputFields()
+	 */
 	static
 	public StructType createOutputSchema(Evaluator evaluator){
 		StructType schema = new StructType();

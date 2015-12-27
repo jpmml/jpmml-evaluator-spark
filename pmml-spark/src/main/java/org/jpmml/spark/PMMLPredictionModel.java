@@ -20,6 +20,7 @@ package org.jpmml.spark;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.google.common.base.Function;
@@ -34,8 +35,8 @@ import org.apache.spark.sql.catalyst.expressions.CreateStruct;
 import org.apache.spark.sql.catalyst.expressions.Expression;
 import org.apache.spark.sql.catalyst.expressions.ScalaUDF;
 import org.apache.spark.sql.types.DataType;
+import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
-import org.dmg.pmml.DataField;
 import org.dmg.pmml.FieldName;
 import org.jpmml.evaluator.Evaluator;
 import scala.Function1;
@@ -69,10 +70,11 @@ public class PMMLPredictionModel extends PredictionModel<Row, PMMLPredictionMode
 	public StructType transformSchema(StructType schema){
 		Evaluator evaluator = getEvaluator();
 
-		FieldName targetField = evaluator.getTargetField();
-		DataField dataField = evaluator.getDataField(targetField);
+		StructType outputSchema = EvaluatorUtil.createOutputSchema(evaluator);
 
-		return SchemaUtils.appendColumn(schema, getPredictionCol(), EvaluatorUtil.translateDataType(dataField.getDataType()));
+		StructField targetField = getTarget(evaluator, outputSchema);
+
+		return SchemaUtils.appendColumn(schema, getPredictionCol(), targetField.dataType());
 	}
 
 	/**
@@ -88,46 +90,57 @@ public class PMMLPredictionModel extends PredictionModel<Row, PMMLPredictionMode
 		final
 		Evaluator evaluator = getEvaluator();
 
-		Function<FieldName, Expression> columnExpressionFunction = new Function<FieldName, Expression>(){
-
-			@Override
-			public Expression apply(FieldName name){
-				Column column = dataFrame.col(name.getValue());
-
-				return column.expr();
-			}
-		};
-		List<Expression> activeColumnExpressions = new ArrayList<>(Lists.transform(evaluator.getActiveFields(), columnExpressionFunction));
-
 		final
 		StructType inputSchema = EvaluatorUtil.createInputSchema(evaluator);
 
 		final
 		StructType outputSchema = EvaluatorUtil.createOutputSchema(evaluator);
 
-		FieldName targetField = evaluator.getTargetField();
-		DataField dataField = evaluator.getDataField(targetField);
+		List<Expression> inputExpressions = Lists.transform(Arrays.asList(inputSchema.fields()), new Function<StructField, Expression>(){
+
+			@Override
+			public Expression apply(StructField field){
+				Column column = dataFrame.col(field.name());
+
+				return column.expr();
+			}
+		});
+
+		CreateStruct createStruct = new CreateStruct(ScalaUtil.toSeq(new ArrayList<>(inputExpressions)));
 
 		final
-		int targetIndex = outputSchema.fieldIndex(targetField.getValue());
+		StructField targetField = getTarget(evaluator, outputSchema);
 
 		Function1<Row, Object> evaluatorFunction = new SerializableAbstractFunction1<Row, Object>(){
+
+			private int targetIndex = outputSchema.fieldIndex(targetField.name());
+
 
 			@Override
 			public Object apply(Row inputRow){
 				Row outputRow = EvaluatorUtil.evaluate(evaluator, inputRow, inputSchema);
 
-				return outputRow.get(targetIndex);
+				return outputRow.get(this.targetIndex);
 			}
 		};
 
-		CreateStruct createStruct = new CreateStruct(ScalaUtil.toSeq(activeColumnExpressions));
-
-		Expression evaluateExpression = new ScalaUDF(evaluatorFunction, EvaluatorUtil.translateDataType(dataField.getDataType()), ScalaUtil.<Expression>singletonSeq(createStruct), ScalaUtil.<DataType>emptySeq());
+		Expression evaluateExpression = new ScalaUDF(evaluatorFunction, targetField.dataType(), ScalaUtil.<Expression>singletonSeq(createStruct), ScalaUtil.<DataType>emptySeq());
 
 		Column targetColumn = new Column(evaluateExpression);
 
 		return dataFrame.withColumn(getPredictionCol(), targetColumn);
+	}
+
+	static
+	private StructField getTarget(Evaluator evaluator, StructType schema){
+		List<FieldName> targetFields = org.jpmml.evaluator.EvaluatorUtil.getTargetFields(evaluator);
+		if(targetFields.size() != 1){
+			throw new IllegalArgumentException();
+		}
+
+		FieldName targetField = targetFields.get(0);
+
+		return schema.apply(EvaluatorUtil.formatTargetName(targetField));
 	}
 
 	public Evaluator getEvaluator(){
