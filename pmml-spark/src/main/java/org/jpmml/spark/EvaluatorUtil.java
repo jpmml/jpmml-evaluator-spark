@@ -44,7 +44,7 @@ import org.jpmml.evaluator.FieldValue;
 import org.jpmml.evaluator.ModelEvaluator;
 import org.jpmml.evaluator.ModelEvaluatorFactory;
 import org.jpmml.evaluator.OutputUtil;
-import org.jpmml.evaluator.TypeAnalysisException;
+import org.jpmml.evaluator.PMMLException;
 import org.jpmml.model.ImportFilter;
 import org.jpmml.model.JAXBUtil;
 import org.jpmml.model.visitors.LocatorTransformer;
@@ -124,7 +124,7 @@ public class EvaluatorUtil {
 			values.add(org.jpmml.evaluator.EvaluatorUtil.decode(targetValue));
 		}
 
-		List<FieldName> outputFields = evaluator.getOutputFields();
+		List<FieldName> outputFields = org.jpmml.evaluator.EvaluatorUtil.getOutputFields(evaluator);
 		for(FieldName outputField : outputFields){
 			Object outputValue = result.get(outputField);
 
@@ -174,15 +174,15 @@ public class EvaluatorUtil {
 			schema = schema.add(formatTargetName(targetField), translateDataType(dataField.getDataType()), false);
 		}
 
-		List<FieldName> outputFields = evaluator.getOutputFields();
+		List<FieldName> outputFields = org.jpmml.evaluator.EvaluatorUtil.getOutputFields(evaluator);
 		for(FieldName outputField : outputFields){
-			OutputField output = evaluator.getOutputField(outputField);
+			OutputField output = org.jpmml.evaluator.EvaluatorUtil.getOutputField(evaluator, outputField);
 
 			org.dmg.pmml.DataType dataType;
 
 			try {
 				dataType = OutputUtil.getDataType(output, (ModelEvaluator<?>)evaluator);
-			} catch(TypeAnalysisException tae){
+			} catch(PMMLException pe){
 				dataType = org.dmg.pmml.DataType.STRING;
 			}
 

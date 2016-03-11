@@ -27,7 +27,6 @@ import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import org.apache.spark.ml.PredictionModel;
 import org.apache.spark.ml.param.ParamMap;
-import org.apache.spark.ml.util.SchemaUtils;
 import org.apache.spark.sql.Column;
 import org.apache.spark.sql.DataFrame;
 import org.apache.spark.sql.Row;
@@ -74,7 +73,7 @@ public class PMMLPredictionModel extends PredictionModel<Row, PMMLPredictionMode
 
 		StructField targetField = getTarget(evaluator, outputSchema);
 
-		return SchemaUtils.appendColumn(schema, getPredictionCol(), targetField.dataType());
+		return schema.add(getPredictionCol(), targetField.dataType(), targetField.nullable());
 	}
 
 	/**
