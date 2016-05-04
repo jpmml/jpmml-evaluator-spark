@@ -69,23 +69,23 @@
 							<relocations>
 								<relocation>
 									<pattern>com.google.common</pattern>
-									<shadedPattern>com.google.common19_0</shadedPattern>
+									<shadedPattern>com.shaded.google.common</shadedPattern>
 								</relocation>
 								<relocation>
 									<pattern>org.dmg.pmml</pattern>
-									<shadedPattern>org.dmg.pmml2_7</shadedPattern>
+									<shadedPattern>org.shaded.dmg.pmml</shadedPattern>
 								</relocation>
 								<relocation>
 									<pattern>org.jpmml.agent</pattern>
-									<shadedPattern>org.jpmml.agent2_7</shadedPattern>
+									<shadedPattern>org.shaded.jpmml.agent</shadedPattern>
 								</relocation>
 								<relocation>
 									<pattern>org.jpmml.model</pattern>
-									<shadedPattern>org.jpmml.model2_7</shadedPattern>
+									<shadedPattern>org.shaded.jpmml.model</shadedPattern>
 								</relocation>
 								<relocation>
 									<pattern>org.jpmml.schema</pattern>
-									<shadedPattern>org.jpmml.schema2_7</shadedPattern>
+									<shadedPattern>org.shaded.jpmml.schema</shadedPattern>
 								</relocation>
 							</relocations>
 						</configuration>
