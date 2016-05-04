@@ -26,13 +26,13 @@ import org.apache.spark.sql.DataFrame;
 import org.apache.spark.sql.SQLContext;
 import org.jpmml.evaluator.Evaluator;
 
-public class Main {
+public class EvaluationExample {
 
 	static
 	public void main(String... args) throws Exception {
 
 		if(args.length != 3){
-			System.err.println("Usage: java " + Main.class.getName() + " <PMML file> <Input CSV file> <Output directory>");
+			System.err.println("Usage: java " + EvaluationExample.class.getName() + " <PMML file> <Input CSV file> <Output directory>");
 
 			System.exit(-1);
 		}

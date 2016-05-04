@@ -45,7 +45,7 @@ DataFrame transformedDataFrame = pmmlModel.transform(dataFrame);
 
 ## Example application ##
 
-The example application JAR file contains an executable class `org.jpmml.spark.Main`.
+The example application JAR file contains an executable class `org.jpmml.spark.EvaluationExample`.
 
 This class expects three command-line arguments:
 
@@ -55,7 +55,7 @@ This class expects three command-line arguments:
 
 For example:
 ```
-spark-submit --master local[2] --class org.jpmml.spark.Main example-1.0-SNAPSHOT.jar DecisionTreeIris.pmml Iris.csv /tmp/DecisionTreeIris
+spark-submit --master local --class org.jpmml.spark.EvaluationExample example-1.0-SNAPSHOT.jar DecisionTreeIris.pmml Iris.csv /tmp/DecisionTreeIris
 ```
 
 # License #
