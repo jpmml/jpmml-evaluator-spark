@@ -26,19 +26,27 @@ The build produces two JAR files:
 
 ## Library ##
 
-Constructing an instance of Spark ML transformer class `org.jpmml.spark.PMMLPredictionModel` based on a PMML document in local filesystem:
+Creating an evaluator instance based on a PMML document in local filesystem:
 ```java
 File pmmlFile = ...;
+
 Evaluator evaluator = EvaluatorUtil.createEvaluator(pmmlFile);
-PMMLPredictionModel pmmlModel = new PMMLPredictionModel(evaluator);
 ```
 
-This class adheres to the specification of the [`org.apache.spark.ml.PredictionModel`] (https://spark.apache.org/docs/latest/api/java/org/apache/spark/ml/PredictionModel.html) transformer class.
-
-Scoring data:
+Scoring Apache Spark RDDs using function class `org.jpmml.spark.PMMLFunction`:
 ```java
-DataFrame dataFrame = ...;
-DataFrame transformedDataFrame = pmmlModel.transform(dataFrame);
+Function<Row, Row> pmmlFunction = new PMMLFunction(evaluator);
+
+JavaRDD<Row> input = ...;
+JavaRDD<Row> output = input.map(pmmlFunction);
+```
+
+Scoring Apache Spark SQL DataFrames using transformer class `org.jpmml.spark.PMMLPredictionModel`:
+```java
+Transformer pmmlTransformer = new PMMLPredictionModel(evaluator);
+
+DataFrame input = ...;
+DataFrame output = pmmlTransformer.transform(input);
 ```
 
 **A note about building and packaging JPMML-Spark applications**. The JPMML-Evaluator library depends on JPMML-Model and Google Guava library versions that are in conflict with the ones that are bundled with Apache Spark and/or Apache Hadoop. This conflict can be easily solved by relocating JPMML-Evaluator library dependencies to a different namespace using the [Apache Maven Shade Plugin] (https://maven.apache.org/plugins/maven-shade-plugin/). Please see the JPMML-Spark example application for a worked out example.
@@ -60,7 +68,7 @@ spark-submit --master local --class org.jpmml.spark.EvaluationExample example-1.
 
 # License #
 
-JPMML-Spark is dual-licensed under the [GNU Affero General Public License (AGPL) version 3.0] (http://www.gnu.org/licenses/agpl-3.0.html) and a commercial license.
+JPMML-Spark is licensed under the [GNU Affero General Public License (AGPL) version 3.0] (http://www.gnu.org/licenses/agpl-3.0.html). Other licenses are available on request.
 
 # Additional information #
 

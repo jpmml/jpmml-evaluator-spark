@@ -22,6 +22,7 @@ import java.io.File;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.ml.Transformer;
 import org.apache.spark.sql.DataFrame;
 import org.apache.spark.sql.SQLContext;
 import org.jpmml.evaluator.Evaluator;
@@ -39,7 +40,7 @@ public class EvaluationExample {
 
 		Evaluator evaluator = EvaluatorUtil.createEvaluator(new File(args[0]));
 
-		PMMLPredictionModel pmmlPredictor = new PMMLPredictionModel(evaluator);
+		Transformer pmmlTransformer = new PMMLPredictionModel(evaluator);
 
 		SparkConf conf = new SparkConf();
 
@@ -48,7 +49,7 @@ public class EvaluationExample {
 
 			DataFrame inputDataFrame = DataFrameUtil.loadCsv(sqlContext, args[1]);
 
-			DataFrame outputDataFrame = pmmlPredictor.transform(inputDataFrame);
+			DataFrame outputDataFrame = pmmlTransformer.transform(inputDataFrame);
 
 			DataFrameUtil.storeCsv(sqlContext, outputDataFrame, args[2]);
 		}
