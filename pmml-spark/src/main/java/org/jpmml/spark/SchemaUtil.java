@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Villu Ruusmann
+ * Copyright (c) 2016 Villu Ruusmann
  *
  * This file is part of JPMML-Spark
  *
@@ -18,31 +18,30 @@
  */
 package org.jpmml.spark;
 
-import org.apache.spark.api.java.function.Function;
-import org.apache.spark.sql.Row;
-import org.jpmml.evaluator.Evaluator;
+import org.apache.spark.sql.types.DataType;
+import org.apache.spark.sql.types.DataTypes;
 
-public class PMMLFunction implements Function<Row, Row> {
+public class SchemaUtil {
 
-	private Evaluator evaluator = null;
-
-
-	public PMMLFunction(Evaluator evaluator){
-		setEvaluator(evaluator);
+	private SchemaUtil(){
 	}
 
-	@Override
-	public Row call(Row row){
-		Evaluator evaluator = getEvaluator();
+	static
+	public DataType translateDataType(org.dmg.pmml.DataType dataType){
 
-		return EvaluatorUtil.evaluate(evaluator, row);
-	}
-
-	public Evaluator getEvaluator(){
-		return this.evaluator;
-	}
-
-	private void setEvaluator(Evaluator evaluator){
-		this.evaluator = evaluator;
+		switch(dataType){
+			case STRING:
+				return DataTypes.StringType;
+			case INTEGER:
+				return DataTypes.IntegerType;
+			case FLOAT:
+				return DataTypes.FloatType;
+			case DOUBLE:
+				return DataTypes.DoubleType;
+			case BOOLEAN:
+				return DataTypes.BooleanType;
+			default:
+				throw new IllegalArgumentException();
+		}
 	}
 }

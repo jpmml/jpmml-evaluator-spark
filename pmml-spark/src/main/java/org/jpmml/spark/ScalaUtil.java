@@ -23,6 +23,7 @@ import java.util.List;
 
 import scala.collection.JavaConversions;
 import scala.collection.Seq;
+import scala.collection.immutable.Set;
 
 public class ScalaUtil {
 
@@ -42,5 +43,10 @@ public class ScalaUtil {
 	static
 	public <E> Seq<E> toSeq(List<E> list){
 		return JavaConversions.asScalaBuffer(list);
+	}
+
+	static
+	public <E> Set<E> singletonSet(E element){
+		return new Set.Set1<>(element);
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Villu Ruusmann
+ * Copyright (c) 2016 Villu Ruusmann
  *
  * This file is part of JPMML-Spark
  *
@@ -18,32 +18,33 @@
  */
 package org.jpmml.spark;
 
-import org.apache.spark.sql.DataFrame;
-import org.apache.spark.sql.DataFrameReader;
-import org.apache.spark.sql.DataFrameWriter;
-import org.apache.spark.sql.SQLContext;
+import java.io.Serializable;
 
-public class DataFrameUtil {
+import org.apache.spark.sql.types.StructField;
+import org.dmg.pmml.FieldName;
+import org.jpmml.evaluator.Evaluator;
 
-	private DataFrameUtil(){
+abstract
+class ColumnProducer implements Serializable {
+
+	private FieldName name = null;
+
+
+	public ColumnProducer(FieldName name){
+		setName(name);
 	}
 
-	static
-	public DataFrame loadCsv(SQLContext sqlContext, String path){
-		DataFrameReader reader = sqlContext.read()
-			.format("com.databricks.spark.csv")
-			.option("header", "true")
-			.option("inferSchema", "true");
+	abstract
+	public StructField init(Evaluator evaluator);
 
-		return reader.load(path);
+	abstract
+	public Object format(Object value);
+
+	public FieldName getName(){
+		return this.name;
 	}
 
-	static
-	public void storeCsv(SQLContext sqlContext, DataFrame dataFrame, String path){
-		DataFrameWriter writer = dataFrame.write()
-			.format("com.databricks.spark.csv")
-		    .option("header", "true");
-
-		writer.save(path);
+	private void setName(FieldName name){
+		this.name = name;
 	}
 }

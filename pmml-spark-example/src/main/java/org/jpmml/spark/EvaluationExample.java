@@ -24,6 +24,8 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.ml.Transformer;
 import org.apache.spark.sql.DataFrame;
+import org.apache.spark.sql.DataFrameReader;
+import org.apache.spark.sql.DataFrameWriter;
 import org.apache.spark.sql.SQLContext;
 import org.jpmml.evaluator.Evaluator;
 
@@ -40,18 +42,32 @@ public class EvaluationExample {
 
 		Evaluator evaluator = EvaluatorUtil.createEvaluator(new File(args[0]));
 
-		Transformer pmmlTransformer = new PMMLPredictionModel(evaluator);
+		TransformerBuilder modelBuilder = new TransformerBuilder(evaluator)
+			.withTargetCols()
+			.withOutputCols()
+			.explode();
+
+		Transformer transformer = modelBuilder.build();
 
 		SparkConf conf = new SparkConf();
 
 		try(JavaSparkContext sparkContext = new JavaSparkContext(conf)){
 			SQLContext sqlContext = new SQLContext(sparkContext);
 
-			DataFrame inputDataFrame = DataFrameUtil.loadCsv(sqlContext, args[1]);
+			DataFrameReader reader = sqlContext.read()
+				.format("com.databricks.spark.csv")
+				.option("header", "true")
+				.option("inferSchema", "true");
 
-			DataFrame outputDataFrame = pmmlTransformer.transform(inputDataFrame);
+			DataFrame dataFrame = reader.load(args[1]);
 
-			DataFrameUtil.storeCsv(sqlContext, outputDataFrame, args[2]);
+			dataFrame = transformer.transform(dataFrame);
+
+			DataFrameWriter writer = dataFrame.write()
+				.format("com.databricks.spark.csv")
+			    .option("header", "true");
+
+			writer.save(args[2]);
 		}
 	}
 }

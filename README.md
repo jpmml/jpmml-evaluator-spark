@@ -26,27 +26,52 @@ The build produces two JAR files:
 
 ## Library ##
 
-Creating an evaluator instance based on a PMML document in local filesystem:
+Building an Apache Spark SQL transformer based on a PMML document in local filesystem:
 ```java
 File pmmlFile = ...;
 
 Evaluator evaluator = EvaluatorUtil.createEvaluator(pmmlFile);
+
+TransformerBuilder pmmlTransformerBuilder = new TransformerBuilder(evaluator)
+	.withTargetCols()
+	.withOutputCols()
+	.explode();
+
+Transformer pmmlTransformer = transformerBuilder.build();
 ```
 
-Scoring Apache Spark RDDs using function class `org.jpmml.spark.PMMLFunction`:
+Scoring data:
 ```java
-Function<Row, Row> pmmlFunction = new PMMLFunction(evaluator);
-
-JavaRDD<Row> input = ...;
-JavaRDD<Row> output = input.map(pmmlFunction);
-```
-
-Scoring Apache Spark SQL DataFrames using transformer class `org.jpmml.spark.PMMLPredictionModel`:
-```java
-Transformer pmmlTransformer = new PMMLPredictionModel(evaluator);
-
 DataFrame input = ...;
 DataFrame output = pmmlTransformer.transform(input);
+```
+
+In default mode, the transformation appends a single `struct`-type column "pmml" to the data frame:
+```
+root
+ |-- Sepal_Length: double (nullable = true)
+ |-- Sepal_Width: double (nullable = true)
+ |-- Petal_Length: double (nullable = true)
+ |-- Petal_Width: double (nullable = true)
+ |-- pmml: struct (nullable = true)
+ |    |-- Species: string (nullable = false)
+ |    |-- Probability_setosa: double (nullable = false)
+ |    |-- Probability_versicolor: double (nullable = false)
+ |    |-- Probability_virginica: double (nullable = false)
+
+```
+
+In exploded mode, the transformation appends multiple columns to the data frame:
+```
+root
+ |-- Sepal_Length: double (nullable = true)
+ |-- Sepal_Width: double (nullable = true)
+ |-- Petal_Length: double (nullable = true)
+ |-- Petal_Width: double (nullable = true)
+ |-- Species: string (nullable = true)
+ |-- Probability_setosa: double (nullable = true)
+ |-- Probability_versicolor: double (nullable = true)
+ |-- Probability_virginica: double (nullable = true)
 ```
 
 **A note about building and packaging JPMML-Spark applications**. The JPMML-Evaluator library depends on JPMML-Model and Google Guava library versions that are in conflict with the ones that are bundled with Apache Spark and/or Apache Hadoop. This conflict can be easily solved by relocating JPMML-Evaluator library dependencies to a different namespace using the [Apache Maven Shade Plugin] (https://maven.apache.org/plugins/maven-shade-plugin/). Please see the JPMML-Spark example application for a worked out example.
