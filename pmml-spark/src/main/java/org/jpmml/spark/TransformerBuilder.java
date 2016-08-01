@@ -33,7 +33,7 @@ public class TransformerBuilder {
 
 	private List<ColumnProducer> columnProducers = new ArrayList<>();
 
-	private boolean explode = false;
+	private boolean exploded = false;
 
 
 	public TransformerBuilder(Evaluator evaluator){
@@ -62,8 +62,8 @@ public class TransformerBuilder {
 		return this;
 	}
 
-	public TransformerBuilder explode(){
-		this.explode = true;
+	public TransformerBuilder exploded(boolean exploded){
+		this.exploded = exploded;
 
 		return this;
 	}
@@ -73,7 +73,7 @@ public class TransformerBuilder {
 
 		PMMLTransformer pmmlTransformer = new PMMLTransformer(evaluator, this.columnProducers);
 
-		if(this.explode){
+		if(this.exploded){
 			ColumnExploder columnExploder = new ColumnExploder(pmmlTransformer.getOutputCol());
 
 			ColumnPruner columnPruner = new ColumnPruner(ScalaUtil.singletonSet(pmmlTransformer.getOutputCol()));

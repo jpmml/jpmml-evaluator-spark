@@ -45,7 +45,7 @@ public class EvaluationExample {
 		TransformerBuilder modelBuilder = new TransformerBuilder(evaluator)
 			.withTargetCols()
 			.withOutputCols()
-			.explode();
+			.exploded(true);
 
 		Transformer transformer = modelBuilder.build();
 
