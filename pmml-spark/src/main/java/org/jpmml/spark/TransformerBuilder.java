@@ -24,7 +24,9 @@ import java.util.List;
 import org.apache.spark.ml.PipelineModel;
 import org.apache.spark.ml.Transformer;
 import org.apache.spark.ml.feature.ColumnPruner;
+import org.dmg.pmml.FeatureType;
 import org.dmg.pmml.FieldName;
+import org.dmg.pmml.OutputField;
 import org.jpmml.evaluator.Evaluator;
 
 public class TransformerBuilder {
@@ -47,6 +49,53 @@ public class TransformerBuilder {
 		for(FieldName targetField : targetFields){
 			this.columnProducers.add(new TargetColumnProducer(targetField));
 		}
+
+		return this;
+	}
+
+	public TransformerBuilder withProbabilityCol(){
+		return withProbabilityCol(null);
+	}
+
+	public TransformerBuilder withProbabilityCol(List<String> labels){
+		Evaluator evaluator = getEvaluator();
+
+		List<FieldName> targetFields = org.jpmml.evaluator.EvaluatorUtil.getTargetFields(evaluator);
+		if(targetFields.size() != 1){
+			throw new IllegalArgumentException();
+		}
+
+		FieldName targetField = targetFields.get(0);
+
+		List<String> values = new ArrayList<>();
+
+		List<FieldName> outputFields = org.jpmml.evaluator.EvaluatorUtil.getOutputFields(evaluator);
+		for(FieldName outputField : outputFields){
+			OutputField output = org.jpmml.evaluator.EvaluatorUtil.getOutputField(evaluator, outputField);
+
+			FeatureType feature = output.getFeature();
+			switch(feature){
+				case PROBABILITY:
+					String value = output.getValue();
+
+					if(value != null){
+						values.add(value);
+					}
+					break;
+				default:
+					break;
+			}
+		}
+
+		if(values.isEmpty()){
+			throw new IllegalArgumentException();
+		} // End if
+
+		if(labels != null && (labels.size() != values.size() || !labels.containsAll(values))){
+			throw new IllegalArgumentException();
+		}
+
+		this.columnProducers.add(new ProbabilityColumnProducer(targetField, labels != null ? labels : values));
 
 		return this;
 	}
