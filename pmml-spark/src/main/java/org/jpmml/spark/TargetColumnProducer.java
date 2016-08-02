@@ -27,31 +27,28 @@ import org.jpmml.evaluator.Evaluator;
 
 class TargetColumnProducer extends ColumnProducer {
 
-	public TargetColumnProducer(FieldName name){
-		super(name);
+	TargetColumnProducer(FieldName fieldName, String columnName){
+		super(fieldName, columnName != null ? columnName : (fieldName != null ? fieldName.getValue() : "_target"));
 	}
 
 	@Override
 	public StructField init(Evaluator evaluator){
-		FieldName name = getName();
+		FieldName fieldName = getFieldName();
 
-		DataField dataField = evaluator.getDataField(name);
+		DataField dataField = evaluator.getDataField(fieldName);
 		if(dataField == null){
 			throw new IllegalArgumentException();
 		}
 
 		DataType dataType = dataField.getDataType();
 
-		return DataTypes.createStructField(formatName(name), SchemaUtil.translateDataType(dataType), false);
+		String columnName = getColumnName();
+
+		return DataTypes.createStructField(columnName, SchemaUtil.translateDataType(dataType), false);
 	}
 
 	@Override
 	public Object format(Object value){
 		return org.jpmml.evaluator.EvaluatorUtil.decode(value);
-	}
-
-	static
-	public String formatName(FieldName name){
-		return (name != null ? name.getValue() : "_target");
 	}
 }

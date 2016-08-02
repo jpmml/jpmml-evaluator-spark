@@ -33,15 +33,15 @@ class OutputColumnProducer extends ColumnProducer {
 	private boolean formatString = false;
 
 
-	public OutputColumnProducer(FieldName name){
-		super(name);
+	OutputColumnProducer(FieldName fieldName, String columnName){
+		super(fieldName, columnName != null ? columnName : fieldName.getValue());
 	}
 
 	@Override
 	public StructField init(Evaluator evaluator){
-		FieldName name = getName();
+		FieldName fieldName = getFieldName();
 
-		OutputField outputField = org.jpmml.evaluator.EvaluatorUtil.getOutputField(evaluator, name);
+		OutputField outputField = org.jpmml.evaluator.EvaluatorUtil.getOutputField(evaluator, fieldName);
 		if(outputField == null){
 			throw new IllegalArgumentException();
 		}
@@ -58,7 +58,9 @@ class OutputColumnProducer extends ColumnProducer {
 			this.formatString = true;
 		}
 
-		return DataTypes.createStructField(name.getValue(), SchemaUtil.translateDataType(dataType), false);
+		String columnName = getColumnName();
+
+		return DataTypes.createStructField(columnName, SchemaUtil.translateDataType(dataType), false);
 	}
 
 	@Override

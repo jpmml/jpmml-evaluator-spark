@@ -27,11 +27,14 @@ import org.jpmml.evaluator.Evaluator;
 abstract
 class ColumnProducer implements Serializable {
 
-	private FieldName name = null;
+	private FieldName fieldName = null;
+
+	private String columnName = null;
 
 
-	public ColumnProducer(FieldName name){
-		setName(name);
+	ColumnProducer(FieldName fieldName, String columnName){
+		setFieldName(fieldName);
+		setColumnName(columnName);
 	}
 
 	abstract
@@ -40,11 +43,24 @@ class ColumnProducer implements Serializable {
 	abstract
 	public Object format(Object value);
 
-	public FieldName getName(){
-		return this.name;
+	public FieldName getFieldName(){
+		return this.fieldName;
 	}
 
-	private void setName(FieldName name){
-		this.name = name;
+	private void setFieldName(FieldName fieldName){
+		this.fieldName = fieldName;
+	}
+
+	public String getColumnName(){
+		return this.columnName;
+	}
+
+	private void setColumnName(String columnName){
+
+		if(columnName == null){
+			throw new IllegalArgumentException();
+		}
+
+		this.columnName = columnName;
 	}
 }

@@ -132,7 +132,7 @@ public class PMMLTransformer extends Transformer {
 				for(int i = 0; i < columnProducers.size(); i++){
 					ColumnProducer columnProducer = columnProducers.get(i);
 
-					FieldName name = columnProducer.getName();
+					FieldName name = columnProducer.getFieldName();
 
 					Object value = result.get(name);
 					Object formattedValue = columnProducer.format(value);

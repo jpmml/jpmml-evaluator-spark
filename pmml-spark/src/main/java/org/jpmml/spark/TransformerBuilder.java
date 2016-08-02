@@ -47,17 +47,17 @@ public class TransformerBuilder {
 
 		List<FieldName> targetFields = org.jpmml.evaluator.EvaluatorUtil.getTargetFields(evaluator);
 		for(FieldName targetField : targetFields){
-			this.columnProducers.add(new TargetColumnProducer(targetField));
+			this.columnProducers.add(new TargetColumnProducer(targetField, null));
 		}
 
 		return this;
 	}
 
-	public TransformerBuilder withProbabilityCol(){
-		return withProbabilityCol(null);
+	public TransformerBuilder withProbabilityCol(String columnName){
+		return withProbabilityCol(columnName, null);
 	}
 
-	public TransformerBuilder withProbabilityCol(List<String> labels){
+	public TransformerBuilder withProbabilityCol(String columnName, List<String> labels){
 		Evaluator evaluator = getEvaluator();
 
 		List<FieldName> targetFields = org.jpmml.evaluator.EvaluatorUtil.getTargetFields(evaluator);
@@ -95,7 +95,7 @@ public class TransformerBuilder {
 			throw new IllegalArgumentException();
 		}
 
-		this.columnProducers.add(new ProbabilityColumnProducer(targetField, labels != null ? labels : values));
+		this.columnProducers.add(new ProbabilityColumnProducer(targetField, columnName, labels != null ? labels : values));
 
 		return this;
 	}
@@ -105,7 +105,7 @@ public class TransformerBuilder {
 
 		List<FieldName> outputFields = org.jpmml.evaluator.EvaluatorUtil.getOutputFields(evaluator);
 		for(FieldName outputField : outputFields){
-			this.columnProducers.add(new OutputColumnProducer(outputField));
+			this.columnProducers.add(new OutputColumnProducer(outputField, null));
 		}
 
 		return this;

@@ -34,15 +34,17 @@ class ProbabilityColumnProducer extends ColumnProducer {
 	private List<String> labels = null;
 
 
-	public ProbabilityColumnProducer(FieldName name, List<String> labels){
-		super(name);
+	ProbabilityColumnProducer(FieldName fieldName, String columnName, List<String> labels){
+		super(fieldName, columnName != null ? columnName : "probability");
 
 		setLabels(labels);
 	}
 
 	@Override
 	public StructField init(Evaluator evaluator){
-		return DataTypes.createStructField("probability", new VectorUDT(), false);
+		String columnName = getColumnName();
+
+		return DataTypes.createStructField(columnName, new VectorUDT(), false);
 	}
 
 	@Override
