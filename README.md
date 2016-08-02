@@ -26,7 +26,7 @@ The build produces two JAR files:
 
 ## Library ##
 
-Building an Apache Spark SQL transformer based on a PMML document in local filesystem:
+Building a generic transformer based on a PMML document in local filesystem:
 ```java
 File pmmlFile = ...;
 
@@ -35,9 +35,24 @@ Evaluator evaluator = EvaluatorUtil.createEvaluator(pmmlFile);
 TransformerBuilder pmmlTransformerBuilder = new TransformerBuilder(evaluator)
 	.withTargetCols()
 	.withOutputCols()
-	.exploded(true);
+	.exploded(false);
 
 Transformer pmmlTransformer = transformerBuilder.build();
+```
+
+Building an Apache Spark ML-style regressor when the PMML document is known to contain a regression model (eg. auto-mpg dataset):
+```java
+TransformerBuilder pmmlTransformerBuilder = new TransformerBuilder(evaluator)
+	.withLabelCol("MPG") // Double column
+	.exploded(true);
+```
+
+Building an Apache Spark ML-style classifier when the PMML document is known to contain a classification model (eg. iris-species dataset):
+```java
+TransformerBuilder pmmlTransformerBuilder = new TransformerBuilder(evaluator)
+	.withLabelCol("Species") // String column
+	.withProbabilityCol("Species_probability", Arrays.asList("setosa", "versicolor", "virginica")) // Vector column
+	.exploded(true);
 ```
 
 Scoring data:
@@ -55,10 +70,7 @@ root
  |-- Petal_Width: double (nullable = true)
  |-- pmml: struct (nullable = true)
  |    |-- Species: string (nullable = false)
- |    |-- Probability_setosa: double (nullable = false)
- |    |-- Probability_versicolor: double (nullable = false)
- |    |-- Probability_virginica: double (nullable = false)
-
+ |    |-- Species_probability: vector (nullable = false)
 ```
 
 In exploded mode, the transformation appends all the requested result columns to the data frame:
@@ -69,9 +81,7 @@ root
  |-- Petal_Length: double (nullable = true)
  |-- Petal_Width: double (nullable = true)
  |-- Species: string (nullable = false)
- |-- Probability_setosa: double (nullable = false)
- |-- Probability_versicolor: double (nullable = false)
- |-- Probability_virginica: double (nullable = false)
+ |-- Species_probability: vector (nullable = false)
 ```
 
 **A note about building and packaging JPMML-Spark applications**. The JPMML-Evaluator library depends on JPMML-Model and Google Guava library versions that are in conflict with the ones that are bundled with Apache Spark and/or Apache Hadoop. This conflict can be easily solved by relocating JPMML-Evaluator library dependencies to a different namespace using the [Apache Maven Shade Plugin] (https://maven.apache.org/plugins/maven-shade-plugin/). Please see the JPMML-Spark example application for a worked out example.
