@@ -53,6 +53,21 @@ public class TransformerBuilder {
 		return this;
 	}
 
+	public TransformerBuilder withLabelCol(String columnName){
+		Evaluator evaluator = getEvaluator();
+
+		List<FieldName> targetFields = org.jpmml.evaluator.EvaluatorUtil.getTargetFields(evaluator);
+		if(targetFields.size() != 1){
+			throw new IllegalArgumentException();
+		}
+
+		FieldName targetField = targetFields.get(0);
+
+		this.columnProducers.add(new TargetColumnProducer(targetField, columnName));
+
+		return this;
+	}
+
 	public TransformerBuilder withProbabilityCol(String columnName){
 		return withProbabilityCol(columnName, null);
 	}
