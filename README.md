@@ -1,4 +1,4 @@
-JPMML-Spark
+JPMML-Spark [![Build Status](https://travis-ci.org/jpmml/jpmml-spark.png?branch=master)](https://travis-ci.org/jpmml/jpmml-spark)
 ===========
 
 PMML evaluator library for the Apache Spark cluster computing system (http://spark.apache.org/).
