@@ -21,7 +21,8 @@ package org.jpmml.spark;
 import org.apache.spark.ml.Transformer;
 import org.apache.spark.ml.param.ParamMap;
 import org.apache.spark.sql.Column;
-import org.apache.spark.sql.DataFrame;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 
@@ -59,14 +60,14 @@ public class ColumnExploder extends Transformer {
 	}
 
 	@Override
-	public DataFrame transform(DataFrame dataFrame){
+	public Dataset<Row> transform(Dataset<?> dataFrame){
 		StructType schema = dataFrame.schema();
 
 		StructType structSchema = getStructSchema(schema);
 
 		Column structColumn = dataFrame.apply(getStructCol());
 
-		DataFrame result = dataFrame;
+		Dataset<?> result = dataFrame;
 
 		StructField[] fields = structSchema.fields();
 		for(StructField field : fields){
@@ -77,7 +78,7 @@ public class ColumnExploder extends Transformer {
 			result = result.withColumn(name, fieldColumn);
 		}
 
-		return result;
+		return result.toDF();
 	}
 
 	private StructType getStructSchema(StructType schema){
