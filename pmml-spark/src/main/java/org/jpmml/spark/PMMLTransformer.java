@@ -29,7 +29,7 @@ import com.google.common.collect.Lists;
 import org.apache.spark.ml.Transformer;
 import org.apache.spark.ml.param.ParamMap;
 import org.apache.spark.sql.Column;
-import org.apache.spark.sql.DataFrame;
+import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.RowFactory;
 import org.apache.spark.sql.catalyst.expressions.CreateStruct;
@@ -88,7 +88,7 @@ public class PMMLTransformer extends Transformer {
 	}
 
 	@Override
-	public DataFrame transform(final DataFrame dataFrame){
+	public Dataset<Row> transform(final Dataset<?> dataFrame){
 		final
 		Evaluator evaluator = getEvaluator();
 
@@ -148,7 +148,7 @@ public class PMMLTransformer extends Transformer {
 
 		Column outputColumn = new Column(evaluateExpression);
 
-		return dataFrame.withColumn(getOutputCol(), outputColumn);
+		return dataFrame.withColumn(getOutputCol(), outputColumn).toDF();
 	}
 
 	public String[] getInputCols(){
