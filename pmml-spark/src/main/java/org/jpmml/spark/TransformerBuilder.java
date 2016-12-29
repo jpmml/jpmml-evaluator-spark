@@ -24,16 +24,16 @@ import java.util.List;
 import org.apache.spark.ml.PipelineModel;
 import org.apache.spark.ml.Transformer;
 import org.apache.spark.ml.feature.ColumnPruner;
-import org.dmg.pmml.FeatureType;
-import org.dmg.pmml.FieldName;
-import org.dmg.pmml.OutputField;
+import org.dmg.pmml.ResultFeature;
 import org.jpmml.evaluator.Evaluator;
+import org.jpmml.evaluator.OutputField;
+import org.jpmml.evaluator.TargetField;
 
 public class TransformerBuilder {
 
 	private Evaluator evaluator = null;
 
-	private List<ColumnProducer> columnProducers = new ArrayList<>();
+	private List<ColumnProducer<?>> columnProducers = new ArrayList<>();
 
 	private boolean exploded = false;
 
@@ -45,8 +45,8 @@ public class TransformerBuilder {
 	public TransformerBuilder withTargetCols(){
 		Evaluator evaluator = getEvaluator();
 
-		List<FieldName> targetFields = org.jpmml.evaluator.EvaluatorUtil.getTargetFields(evaluator);
-		for(FieldName targetField : targetFields){
+		List<TargetField> targetFields = evaluator.getTargetFields();
+		for(TargetField targetField : targetFields){
 			this.columnProducers.add(new TargetColumnProducer(targetField, null));
 		}
 
@@ -56,12 +56,12 @@ public class TransformerBuilder {
 	public TransformerBuilder withLabelCol(String columnName){
 		Evaluator evaluator = getEvaluator();
 
-		List<FieldName> targetFields = org.jpmml.evaluator.EvaluatorUtil.getTargetFields(evaluator);
+		List<TargetField> targetFields = evaluator.getTargetFields();
 		if(targetFields.size() != 1){
 			throw new IllegalArgumentException();
 		}
 
-		FieldName targetField = targetFields.get(0);
+		TargetField targetField = targetFields.get(0);
 
 		this.columnProducers.add(new TargetColumnProducer(targetField, columnName));
 
@@ -75,23 +75,23 @@ public class TransformerBuilder {
 	public TransformerBuilder withProbabilityCol(String columnName, List<String> labels){
 		Evaluator evaluator = getEvaluator();
 
-		List<FieldName> targetFields = org.jpmml.evaluator.EvaluatorUtil.getTargetFields(evaluator);
+		List<TargetField> targetFields = evaluator.getTargetFields();
 		if(targetFields.size() != 1){
 			throw new IllegalArgumentException();
 		}
 
-		FieldName targetField = targetFields.get(0);
+		TargetField targetField = targetFields.get(0);
 
 		List<String> values = new ArrayList<>();
 
-		List<FieldName> outputFields = org.jpmml.evaluator.EvaluatorUtil.getOutputFields(evaluator);
-		for(FieldName outputField : outputFields){
-			OutputField output = org.jpmml.evaluator.EvaluatorUtil.getOutputField(evaluator, outputField);
+		List<OutputField> outputFields = evaluator.getOutputFields();
+		for(OutputField outputField : outputFields){
+			org.dmg.pmml.OutputField pmmlOutputField = outputField.getOutputField();
 
-			FeatureType feature = output.getFeature();
-			switch(feature){
+			ResultFeature resultFeature = pmmlOutputField.getResultFeature();
+			switch(resultFeature){
 				case PROBABILITY:
-					String value = output.getValue();
+					String value = pmmlOutputField.getValue();
 
 					if(value != null){
 						values.add(value);
@@ -118,8 +118,8 @@ public class TransformerBuilder {
 	public TransformerBuilder withOutputCols(){
 		Evaluator evaluator = getEvaluator();
 
-		List<FieldName> outputFields = org.jpmml.evaluator.EvaluatorUtil.getOutputFields(evaluator);
-		for(FieldName outputField : outputFields){
+		List<OutputField> outputFields = evaluator.getOutputFields();
+		for(OutputField outputField : outputFields){
 			this.columnProducers.add(new OutputColumnProducer(outputField, null));
 		}
 

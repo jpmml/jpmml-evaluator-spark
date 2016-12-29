@@ -21,46 +21,40 @@ package org.jpmml.spark;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
 import org.dmg.pmml.DataType;
-import org.dmg.pmml.FieldName;
-import org.dmg.pmml.OutputField;
 import org.jpmml.evaluator.Evaluator;
 import org.jpmml.evaluator.ModelEvaluator;
+import org.jpmml.evaluator.OutputField;
 import org.jpmml.evaluator.OutputUtil;
 import org.jpmml.evaluator.PMMLException;
 
-class OutputColumnProducer extends ColumnProducer {
+class OutputColumnProducer extends ColumnProducer<OutputField> {
 
 	private boolean formatString = false;
 
 
-	OutputColumnProducer(FieldName fieldName, String columnName){
-		super(fieldName, columnName != null ? columnName : fieldName.getValue());
+	OutputColumnProducer(OutputField field, String columnName){
+		super(field, columnName != null ? columnName : getName(field));
 	}
 
 	@Override
 	public StructField init(Evaluator evaluator){
-		FieldName fieldName = getFieldName();
+		OutputField field = getField();
 
-		OutputField outputField = org.jpmml.evaluator.EvaluatorUtil.getOutputField(evaluator, fieldName);
-		if(outputField == null){
-			throw new IllegalArgumentException();
+		DataType dataType = field.getDataType();
+		if(dataType == null){
+
+			try {
+				dataType = OutputUtil.getDataType(field.getOutputField(), (ModelEvaluator<?>)evaluator);
+
+				this.formatString = false;
+			} catch(PMMLException pe){
+				dataType = DataType.STRING;
+
+				this.formatString = true;
+			}
 		}
 
-		DataType dataType;
-
-		try {
-			dataType = OutputUtil.getDataType(outputField, (ModelEvaluator<?>)evaluator);
-
-			this.formatString = false;
-		} catch(PMMLException pe){
-			dataType = DataType.STRING;
-
-			this.formatString = true;
-		}
-
-		String columnName = getColumnName();
-
-		return DataTypes.createStructField(columnName, SchemaUtil.translateDataType(dataType), false);
+		return DataTypes.createStructField(getColumnName(), SchemaUtil.translateDataType(dataType), false);
 	}
 
 	@Override
@@ -71,5 +65,10 @@ class OutputColumnProducer extends ColumnProducer {
 		}
 
 		return value;
+	}
+
+	static
+	private String getName(OutputField field){
+		return (field.getName()).getValue();
 	}
 }

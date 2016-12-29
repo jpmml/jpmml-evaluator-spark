@@ -21,19 +21,19 @@ package org.jpmml.spark;
 import java.io.Serializable;
 
 import org.apache.spark.sql.types.StructField;
-import org.dmg.pmml.FieldName;
 import org.jpmml.evaluator.Evaluator;
+import org.jpmml.evaluator.ResultField;
 
 abstract
-class ColumnProducer implements Serializable {
+class ColumnProducer<F extends ResultField> implements Serializable {
 
-	private FieldName fieldName = null;
+	private F field = null;
 
 	private String columnName = null;
 
 
-	ColumnProducer(FieldName fieldName, String columnName){
-		setFieldName(fieldName);
+	ColumnProducer(F field, String columnName){
+		setField(field);
 		setColumnName(columnName);
 	}
 
@@ -43,12 +43,12 @@ class ColumnProducer implements Serializable {
 	abstract
 	public Object format(Object value);
 
-	public FieldName getFieldName(){
-		return this.fieldName;
+	public F getField(){
+		return this.field;
 	}
 
-	private void setFieldName(FieldName fieldName){
-		this.fieldName = fieldName;
+	private void setField(F field){
+		this.field = field;
 	}
 
 	public String getColumnName(){

@@ -20,35 +20,37 @@ package org.jpmml.spark;
 
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
-import org.dmg.pmml.DataField;
 import org.dmg.pmml.DataType;
-import org.dmg.pmml.FieldName;
 import org.jpmml.evaluator.Evaluator;
+import org.jpmml.evaluator.TargetField;
 
-class TargetColumnProducer extends ColumnProducer {
+class TargetColumnProducer extends ColumnProducer<TargetField> {
 
-	TargetColumnProducer(FieldName fieldName, String columnName){
-		super(fieldName, columnName != null ? columnName : (fieldName != null ? fieldName.getValue() : "_target"));
+	TargetColumnProducer(TargetField field, String columnName){
+		super(field, columnName != null ? columnName : getName(field));
 	}
 
 	@Override
 	public StructField init(Evaluator evaluator){
-		FieldName fieldName = getFieldName();
+		TargetField field = getField();
 
-		DataField dataField = evaluator.getDataField(fieldName);
-		if(dataField == null){
-			throw new IllegalArgumentException();
-		}
+		DataType dataType = field.getDataType();
 
-		DataType dataType = dataField.getDataType();
-
-		String columnName = getColumnName();
-
-		return DataTypes.createStructField(columnName, SchemaUtil.translateDataType(dataType), false);
+		return DataTypes.createStructField(getColumnName(), SchemaUtil.translateDataType(dataType), false);
 	}
 
 	@Override
 	public Object format(Object value){
 		return org.jpmml.evaluator.EvaluatorUtil.decode(value);
+	}
+
+	static
+	private String getName(TargetField field){
+
+		if(field.isSynthetic()){
+			return "_target";
+		}
+
+		return (field.getName()).getValue();
 	}
 }

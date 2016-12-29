@@ -42,6 +42,8 @@ import org.apache.spark.sql.types.StructType;
 import org.dmg.pmml.FieldName;
 import org.jpmml.evaluator.Evaluator;
 import org.jpmml.evaluator.FieldValue;
+import org.jpmml.evaluator.InputField;
+import org.jpmml.evaluator.ResultField;
 import scala.Function1;
 import scala.runtime.AbstractFunction1;
 
@@ -51,15 +53,15 @@ public class PMMLTransformer extends Transformer {
 
 	private Evaluator evaluator = null;
 
-	private List<ColumnProducer> columnProducers = null;
+	private List<ColumnProducer<?>> columnProducers = null;
 
 	private StructType outputSchema = null;
 
 
-	public PMMLTransformer(Evaluator evaluator, List<ColumnProducer> columnProducers){
+	public PMMLTransformer(Evaluator evaluator, List<ColumnProducer<?>> columnProducers){
 		StructType outputSchema = new StructType();
 
-		for(ColumnProducer columnProducer : columnProducers){
+		for(ColumnProducer<?> columnProducer : columnProducers){
 			StructField structField = columnProducer.init(evaluator);
 
 			outputSchema = outputSchema.add(structField);
@@ -93,22 +95,22 @@ public class PMMLTransformer extends Transformer {
 		Evaluator evaluator = getEvaluator();
 
 		final
-		List<ColumnProducer> columnProducers = getColumnProducers();
+		List<ColumnProducer<?>> columnProducers = getColumnProducers();
 
 		final
-		List<FieldName> activeFields = evaluator.getActiveFields();
+		List<InputField> inputFields = evaluator.getInputFields();
 
-		Function<FieldName, Expression> function = new Function<FieldName, Expression>(){
+		Function<InputField, Expression> function = new Function<InputField, Expression>(){
 
 			@Override
-			public Expression apply(FieldName name){
-				Column column = dataFrame.apply(name.getValue());
+			public Expression apply(InputField inputField){
+				Column column = dataFrame.apply((inputField.getName()).getValue());
 
 				return column.expr();
 			}
 		};
 
-		List<Expression> activeExpressions = Lists.newArrayList(Lists.transform(activeFields, function));
+		List<Expression> activeExpressions = Lists.newArrayList(Lists.transform(inputFields, function));
 
 		Function1<Row, Row> evaluatorFunction = new SerializableAbstractFunction1<Row, Row>(){
 
@@ -116,13 +118,14 @@ public class PMMLTransformer extends Transformer {
 			public Row apply(Row row){
 				Map<FieldName, FieldValue> arguments = new LinkedHashMap<>();
 
-				for(int i = 0; i < activeFields.size(); i++){
-					FieldName activeField = activeFields.get(i);
+				for(int i = 0; i < inputFields.size(); i++){
+					InputField inputField = inputFields.get(i);
+					FieldName name = inputField.getName();
+
 					Object value = row.get(i);
+					FieldValue preparedValue = inputField.prepare(value);
 
-					FieldValue activeValue = evaluator.prepare(activeField, value);
-
-					arguments.put(activeField, activeValue);
+					arguments.put(name, preparedValue);
 				}
 
 				Map<FieldName, ?> result = evaluator.evaluate(arguments);
@@ -130,9 +133,10 @@ public class PMMLTransformer extends Transformer {
 				List<Object> formattedValues = new ArrayList<>(columnProducers.size());
 
 				for(int i = 0; i < columnProducers.size(); i++){
-					ColumnProducer columnProducer = columnProducers.get(i);
+					ColumnProducer<?> columnProducer = columnProducers.get(i);
 
-					FieldName name = columnProducer.getFieldName();
+					ResultField resultField = columnProducer.getField();
+					FieldName name = resultField.getName();
 
 					Object value = result.get(name);
 					Object formattedValue = columnProducer.format(value);
@@ -154,17 +158,17 @@ public class PMMLTransformer extends Transformer {
 	public String[] getInputCols(){
 		Evaluator evaluator = getEvaluator();
 
-		List<FieldName> activeFields = evaluator.getActiveFields();
+		List<InputField> inputFields = evaluator.getActiveFields();
 
-		Function<FieldName, String> function = new Function<FieldName, String>(){
+		Function<InputField, String> function = new Function<InputField, String>(){
 
 			@Override
-			public String apply(FieldName name){
-				return name.getValue();
+			public String apply(InputField inputField){
+				return (inputField.getName()).getValue();
 			}
 		};
 
-		List<String> values = Lists.newArrayList(Lists.transform(activeFields, function));
+		List<String> values = Lists.newArrayList(Lists.transform(inputFields, function));
 
 		return values.toArray(new String[values.size()]);
 	}
@@ -190,11 +194,11 @@ public class PMMLTransformer extends Transformer {
 		this.evaluator = evaluator;
 	}
 
-	public List<ColumnProducer> getColumnProducers(){
+	public List<ColumnProducer<?>> getColumnProducers(){
 		return this.columnProducers;
 	}
 
-	private void setColumnProducers(List<ColumnProducer> columnProducers){
+	private void setColumnProducers(List<ColumnProducer<?>> columnProducers){
 		this.columnProducers = columnProducers;
 	}
 

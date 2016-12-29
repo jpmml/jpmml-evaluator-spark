@@ -25,26 +25,24 @@ import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.VectorUDT;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
-import org.dmg.pmml.FieldName;
 import org.jpmml.evaluator.Evaluator;
 import org.jpmml.evaluator.HasProbability;
+import org.jpmml.evaluator.TargetField;
 
-class ProbabilityColumnProducer extends ColumnProducer {
+class ProbabilityColumnProducer extends ColumnProducer<TargetField> {
 
 	private List<String> labels = null;
 
 
-	ProbabilityColumnProducer(FieldName fieldName, String columnName, List<String> labels){
-		super(fieldName, columnName != null ? columnName : "probability");
+	ProbabilityColumnProducer(TargetField field, String columnName, List<String> labels){
+		super(field, columnName != null ? columnName : "probability");
 
 		setLabels(labels);
 	}
 
 	@Override
 	public StructField init(Evaluator evaluator){
-		String columnName = getColumnName();
-
-		return DataTypes.createStructField(columnName, new VectorUDT(), false);
+		return DataTypes.createStructField(getColumnName(), new VectorUDT(), false);
 	}
 
 	@Override
