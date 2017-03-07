@@ -64,7 +64,7 @@ public class ColumnExploder extends Transformer {
 
 		StructType structSchema = getStructSchema(schema);
 
-		Column structColumn = dataFrame.apply(getStructCol());
+		Column structColumn = dataFrame.apply(DataFrameUtil.escapeColumnName(getStructCol()));
 
 		DataFrame result = dataFrame;
 
@@ -72,9 +72,9 @@ public class ColumnExploder extends Transformer {
 		for(StructField field : fields){
 			String name = field.name();
 
-			Column fieldColumn = structColumn.getField(name);
+			Column fieldColumn = structColumn.getField(DataFrameUtil.escapeColumnName(name));
 
-			result = result.withColumn(name, fieldColumn);
+			result = result.withColumn(DataFrameUtil.escapeColumnName(name), fieldColumn);
 		}
 
 		return result;

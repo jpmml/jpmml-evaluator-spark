@@ -104,7 +104,7 @@ public class PMMLTransformer extends Transformer {
 
 			@Override
 			public Expression apply(InputField inputField){
-				Column column = dataFrame.apply((inputField.getName()).getValue());
+				Column column = dataFrame.apply(DataFrameUtil.escapeColumnName((inputField.getName()).getValue()));
 
 				return column.expr();
 			}
@@ -152,7 +152,7 @@ public class PMMLTransformer extends Transformer {
 
 		Column outputColumn = new Column(evaluateExpression);
 
-		return dataFrame.withColumn(getOutputCol(), outputColumn);
+		return dataFrame.withColumn(DataFrameUtil.escapeColumnName(getOutputCol()), outputColumn);
 	}
 
 	public String[] getInputCols(){
