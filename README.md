@@ -5,7 +5,7 @@ PMML evaluator library for the Apache Spark cluster computing system (http://spa
 
 # Features #
 
-* Full support for PMML specification versions 3.0 through 4.2. The evaluation is handled by the [JPMML-Evaluator] (https://github.com/jpmml/jpmml-evaluator) library.
+* Full support for PMML specification versions 3.0 through 4.2. The evaluation is handled by the [JPMML-Evaluator](https://github.com/jpmml/jpmml-evaluator) library.
 
 # Prerequisites #
 
@@ -13,7 +13,7 @@ PMML evaluator library for the Apache Spark cluster computing system (http://spa
 
 # Installation #
 
-Enter the project root directory and build using [Apache Maven] (http://maven.apache.org/):
+Enter the project root directory and build using [Apache Maven](http://maven.apache.org/):
 ```
 mvn clean install
 ```
@@ -37,7 +37,7 @@ TransformerBuilder pmmlTransformerBuilder = new TransformerBuilder(evaluator)
 	.withOutputCols()
 	.exploded(false);
 
-Transformer pmmlTransformer = transformerBuilder.build();
+Transformer pmmlTransformer = pmmlTransformerBuilder.build();
 ```
 
 Building an Apache Spark ML-style regressor when the PMML document is known to contain a regression model (eg. auto-mpg dataset):
@@ -84,7 +84,7 @@ root
  |-- Species_probability: vector (nullable = false)
 ```
 
-**A note about building and packaging JPMML-Spark applications**. The JPMML-Evaluator library depends on JPMML-Model and Google Guava library versions that are in conflict with the ones that are bundled with Apache Spark and/or Apache Hadoop. This conflict can be easily solved by relocating JPMML-Evaluator library dependencies to a different namespace using the [Apache Maven Shade Plugin] (https://maven.apache.org/plugins/maven-shade-plugin/). Please see the JPMML-Spark example application for a worked out example.
+**A note about building and packaging JPMML-Spark applications**. The JPMML-Evaluator library depends on JPMML-Model and Google Guava library versions that are in conflict with the ones that are bundled with Apache Spark and/or Apache Hadoop. This conflict can be easily solved by relocating JPMML-Evaluator library dependencies to a different namespace using the [Apache Maven Shade Plugin](https://maven.apache.org/plugins/maven-shade-plugin/). Please see the JPMML-Spark example application for a worked out example.
 
 ## Example application ##
 
@@ -103,8 +103,8 @@ spark-submit --master local --class org.jpmml.spark.EvaluationExample example-1.
 
 # License #
 
-JPMML-Spark is licensed under the [GNU Affero General Public License (AGPL) version 3.0] (http://www.gnu.org/licenses/agpl-3.0.html). Other licenses are available on request.
+JPMML-Spark is licensed under the [GNU Affero General Public License (AGPL) version 3.0](http://www.gnu.org/licenses/agpl-3.0.html). Other licenses are available on request.
 
 # Additional information #
 
-Please contact [info@openscoring.io] (mailto:info@openscoring.io)
+Please contact [info@openscoring.io](mailto:info@openscoring.io)
