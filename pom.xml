@@ -5,12 +5,11 @@
 	<groupId>org.jpmml</groupId>
 	<artifactId>jpmml-spark</artifactId>
 	<version>1.0-SNAPSHOT</version>
-	<packaging>pom</packaging>
 
 	<name>JPMML-Spark</name>
 	<description>PMML evaluator library for the Apache Spark cluster computing system (http://spark.apache.org/)</description>
 	<url>http://www.jpmml.org</url>
-	
+
 	<licenses>
 		<license>
 			<name>GNU Affero General Public License (AGPL) version 3.0</name>
@@ -26,11 +25,6 @@
 		</developer>
 	</developers>
 
-	<modules>
-		<module>pmml-spark</module>
-		<module>pmml-spark-example</module>
-	</modules>
-
 	<scm>
 		<connection>scm:git:git@github.com:jpmml/jpmml-spark.git</connection>
 		<developerConnection>scm:git:git@github.com:jpmml/jpmml-spark.git</developerConnection>
@@ -42,46 +36,44 @@
 		<url>https://github.com/jpmml/jpmml-spark/issues</url>
 	</issueManagement>
 
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.jpmml</groupId>
-				<artifactId>pmml-spark</artifactId>
-				<version>1.0-SNAPSHOT</version>
-			</dependency>
+	<dependencies>
+		<dependency>
+			<groupId>org.jpmml</groupId>
+			<artifactId>pmml-evaluator</artifactId>
+			<version>1.3.5</version>
+		</dependency>
 
-			<dependency>
-				<groupId>org.apache.spark</groupId>
-				<artifactId>spark-catalyst_2.10</artifactId>
-				<version>[1.5.0, 1.6.3]</version>
-				<scope>provided</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.spark</groupId>
-				<artifactId>spark-core_2.10</artifactId>
-				<version>[1.5.0, 1.6.3]</version>
-				<scope>provided</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.spark</groupId>
-				<artifactId>spark-mllib_2.10</artifactId>
-				<version>[1.5.0, 1.6.3]</version>
-				<scope>provided</scope>
-				<exclusions>
-					<exclusion>
-						<groupId>org.jpmml</groupId>
-						<artifactId>pmml-model</artifactId>
-					</exclusion>
-				</exclusions>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.spark</groupId>
-				<artifactId>spark-sql_2.10</artifactId>
-				<version>[1.5.0, 1.6.3]</version>
-				<scope>provided</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
+		<dependency>
+			<groupId>org.apache.spark</groupId>
+			<artifactId>spark-catalyst_2.10</artifactId>
+			<version>[1.5.0, 1.6.3]</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.spark</groupId>
+			<artifactId>spark-core_2.10</artifactId>
+			<version>[1.5.0, 1.6.3]</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.spark</groupId>
+			<artifactId>spark-mllib_2.10</artifactId>
+			<version>[1.5.0, 1.6.3]</version>
+			<scope>provided</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.jpmml</groupId>
+					<artifactId>pmml-model</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.spark</groupId>
+			<artifactId>spark-sql_2.10</artifactId>
+			<version>[1.5.0, 1.6.3]</version>
+			<scope>provided</scope>
+		</dependency>
+	</dependencies>
 
 	<repositories>
 		<repository>
