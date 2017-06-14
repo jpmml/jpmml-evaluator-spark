@@ -18,9 +18,9 @@
  */
 package org.jpmml.evaluator.spark;
 
-public class DataFrameUtil {
+public class DatasetUtil {
 
-	private DataFrameUtil(){
+	private DatasetUtil(){
 	}
 
 	static
