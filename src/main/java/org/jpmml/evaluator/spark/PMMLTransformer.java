@@ -45,6 +45,8 @@ import org.jpmml.evaluator.FieldValue;
 import org.jpmml.evaluator.InputField;
 import org.jpmml.evaluator.ResultField;
 import scala.Function1;
+import scala.None;
+import scala.None$;
 import scala.runtime.AbstractFunction1;
 
 public class PMMLTransformer extends Transformer {
@@ -148,7 +150,7 @@ public class PMMLTransformer extends Transformer {
 			}
 		};
 
-		Expression evaluateExpression = new ScalaUDF(evaluatorFunction, getOutputSchema(), ScalaUtil.<Expression>singletonSeq(new CreateStruct(ScalaUtil.<Expression>toSeq(activeExpressions))), ScalaUtil.<DataType>emptySeq());
+		Expression evaluateExpression = new ScalaUDF(evaluatorFunction, getOutputSchema(), ScalaUtil.<Expression>singletonSeq(CreateStruct.apply(ScalaUtil.<Expression>toSeq(activeExpressions))), ScalaUtil.<DataType>emptySeq(), None$.<String>empty());
 
 		Column outputColumn = new Column(evaluateExpression);
 
