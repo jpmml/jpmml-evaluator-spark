@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Villu Ruusmann
+ * Copyright (c) 2017 Villu Ruusmann
  *
  * This file is part of JPMML-Evaluator
  *
@@ -16,32 +16,16 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with JPMML-Evaluator.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jpmml.evaluator.spark;
+package org.jpmml.evaluator.spark.support
 
-import org.apache.spark.sql.types.DataType;
-import org.apache.spark.sql.types.DataTypes;
+object DatasetUtil {
+  def escapeColumnName(name: String): String = {
+    // A column name that contains special characters needs to be surrounded by backticks
+    val containsDot = name.indexOf('.') > -1
 
-public class SchemaUtil {
-
-	private SchemaUtil(){
-	}
-
-	static
-	public DataType translateDataType(org.dmg.pmml.DataType dataType){
-
-		switch(dataType){
-			case STRING:
-				return DataTypes.StringType;
-			case INTEGER:
-				return DataTypes.IntegerType;
-			case FLOAT:
-				return DataTypes.FloatType;
-			case DOUBLE:
-				return DataTypes.DoubleType;
-			case BOOLEAN:
-				return DataTypes.BooleanType;
-			default:
-				throw new IllegalArgumentException();
-		}
-	}
+    if (containsDot)
+      s"`$name`"
+    else
+      name
+  }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Villu Ruusmann
+ * Copyright (c) 2016 Villu Ruusmann
  *
  * This file is part of JPMML-Evaluator
  *
@@ -16,21 +16,18 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with JPMML-Evaluator.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jpmml.evaluator.spark;
+package org.jpmml.evaluator.spark
 
-public class DatasetUtil {
+import java.io.Serializable
+import org.apache.spark.sql.types.StructField
+import org.jpmml.evaluator.Evaluator
+import org.jpmml.evaluator.ResultField
 
-	private DatasetUtil(){
-	}
+abstract class ColumnProducer[F <: ResultField] private[spark](val field: F, val columnName: String) extends Serializable {
+  if (columnName == null)
+    throw new IllegalArgumentException
 
-	static
-	public String escapeColumnName(String name){
+  def init(evaluator: Evaluator): StructField
 
-		// A column name that contains special characters needs to be surrounded by backticks
-		if(name.indexOf('.') > -1){
-			return ("`" + name + "`");
-		}
-
-		return name;
-	}
+  def format(value: Any): Any
 }
