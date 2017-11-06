@@ -24,13 +24,17 @@ import org.jpmml.evaluator.spark.ColumnProducer
 import org.jpmml.evaluator.{Evaluator, HasProbability, TargetField}
 
 
-class ProbabilityColumnProducer private[spark](override val field: TargetField,
-                                               override val columnName: String,
-                                               val labels: Seq[String]) extends
-  ColumnProducer[TargetField](field,
-    if (columnName != null)
-      columnName else
-    "probability") {
+object ProbabilityColumnProducer {
+  def apply(field: TargetField, columnName: String, labels: Seq[String]): ProbabilityColumnProducer = {
+    new ProbabilityColumnProducer(field,
+      if (columnName != null)
+        columnName else
+        "probability", labels)
+  }
+}
+
+class ProbabilityColumnProducer private[producers](override val field: TargetField, override val columnName: String, labels: Seq[String]) extends
+  ColumnProducer[TargetField](field: TargetField, columnName: String) {
 
   override def init(evaluator: Evaluator): StructField =
     DataTypes.createStructField(columnName, new VectorUDT, false)

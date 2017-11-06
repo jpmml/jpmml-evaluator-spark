@@ -44,7 +44,7 @@ class TransformerBuilder(val evaluator: jpmmlEvaluator.Evaluator) {
     */
   def withTargetCols: TransformerBuilder = {
     for (targetField <- targetFields) {
-      columnProducers += new TargetColumnProducer(
+      columnProducers += TargetColumnProducer(
         field = targetField,
         columnName = null)
     }
@@ -62,7 +62,7 @@ class TransformerBuilder(val evaluator: jpmmlEvaluator.Evaluator) {
 
     val targetField: jpmmlEvaluator.TargetField = targetFields.get(0)
 
-    columnProducers += new TargetColumnProducer(
+    columnProducers += TargetColumnProducer(
       field = targetField,
       columnName = columnName)
 
@@ -91,14 +91,14 @@ class TransformerBuilder(val evaluator: jpmmlEvaluator.Evaluator) {
       throw new IllegalArgumentException
     }
 
-    if (labels != null && (labels.size != pmmlValues.size || labels.intersect(pmmlValues).isEmpty))
+    if (labels != null && (labels.size != pmmlValues.size && labels.intersect(pmmlValues).isEmpty))
       throw new IllegalArgumentException
 
-    columnProducers += new ProbabilityColumnProducer(targetField, columnName,
-      if (labels != null)
-        labels
-      else
-        pmmlValues)
+    val strings: Seq[String] = if (labels != null) labels else pmmlValues
+
+    val producer = ProbabilityColumnProducer(targetField, columnName, strings)
+
+    columnProducers += producer
 
     this
   }
@@ -131,7 +131,7 @@ class TransformerBuilder(val evaluator: jpmmlEvaluator.Evaluator) {
   def withOutputCols: TransformerBuilder = {
     val outputFields: Seq[jpmmlEvaluator.OutputField] = evaluator.getOutputFields
     for (outputField <- outputFields) {
-      columnProducers += new OutputColumnProducer(outputField, null)
+      columnProducers += OutputColumnProducer(outputField, null)
     }
 
     this
@@ -152,16 +152,24 @@ class TransformerBuilder(val evaluator: jpmmlEvaluator.Evaluator) {
     * @todo Use copy / case class
     */
   def build: Transformer = {
-    val pmmlTransformer = PmmlTransformer(evaluator, columnProducers.toList)
+    val pmmlTransformer = buildTransformer
 
     if (exploded) {
-      PmmlPipelineModel("pmml-pipeline", Array(
-        pmmlTransformer,
-        PmmlColumnExploder(pmmlTransformer.outputCol),
-        PmmlColumnPruner(Set(pmmlTransformer.outputCol))))
+      buildPipeline(pmmlTransformer)
     }
     else
       pmmlTransformer
+  }
+
+  def buildTransformer = {
+    PmmlTransformer(evaluator, columnProducers.toList)
+  }
+
+  def buildPipeline(pmmlTransformer: PmmlTransformer) = {
+    PmmlPipelineModel("pmml-pipeline", Array(
+      pmmlTransformer,
+      PmmlColumnExploder(pmmlTransformer.outputCol),
+      PmmlColumnPruner(Set(pmmlTransformer.outputCol))))
   }
 }
 
