@@ -24,7 +24,7 @@ import org.apache.spark.ml.{Model, PipelineModel, Transformer}
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util.{MLWritable, MLWriter}
 import org.apache.spark.sql.{Column, DataFrame, Dataset, Row, RowFactory}
-import org.apache.spark.sql.catalyst.expressions.{CreateStruct, Expression, ScalaUDF}
+import org.apache.spark.sql.catalyst.expressions.{CreateStruct, Expression, GenericRow, ScalaUDF}
 import org.apache.spark.sql.types.{DataType, DataTypes, StructType}
 import org.dmg.pmml.FieldName
 import org.jpmml.evaluator.spark.support.DatasetUtil
@@ -33,7 +33,7 @@ import org.jpmml.evaluator.{Evaluator, FieldValue, InputField, ResultField}
 
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
-import scala.collection.mutable
+import scala.collection.{immutable, mutable}
 import java.{util => ju}
 /**
   * A pmml transformer builds a pipeline from a JPMML Evaluator
@@ -91,12 +91,14 @@ case class PmmlTransformer(
 
       val result: mutable.Map[FieldName, _] = evaluator.evaluate(arguments.asJava).asScala
 
-      val formattedvalues: Array[Any] = columnProducers
+      val formattedvalues: immutable.Seq[Any] = columnProducers
         .map(columnProducer => {
           columnProducer.format(result(columnProducer.field.getName))
-        }).toArray
+        })
 
-      RowFactory.create(formattedvalues)
+      val resultRow: Row = Row.fromSeq(formattedvalues)
+
+      resultRow
     }
   }
 
@@ -109,11 +111,13 @@ case class PmmlTransformer(
         ).expr
     }
 
+    val expressions: Seq[Expression] = Seq[Expression](
+      CreateStruct(evaluator.getInputFields.asScala.map(escapeColumns)))
+
     val udf = ScalaUDF(
       function = evaluationFunction,
       dataType = outputSchema,
-      children = Seq[Expression](
-        CreateStruct(evaluator.getInputFields.asScala.map(escapeColumns))),
+      children = expressions,
       inputTypes = Seq[DataType]())
 
     dataset.withColumn(

@@ -32,11 +32,12 @@
         <ComparisonMeasure kind="distance">
             <squaredEuclidean/>
         </ComparisonMeasure>
+
         <Output>
-            <OutputField name="setosa" optype="categorical" dataType="double" feature="probability" value="setosa" />
-            <OutputField name="virginica" optype="categorical" dataType="double" feature="probability" value="virginica" />
-            <OutputField name="versicolor" optype="categorical" dataType="double" feature="probability" value="versicolor" />
+            <OutputField name="prediction" optype="categorical" dataType="string" feature="predictedValue"/>
+            <OutputField name="cluster" optype="categorical" dataType="string" feature="clusterAffinity"/>
         </Output>
+
         <ClusteringField field="sepal_length" compareFunction="absDiff"/>
         <ClusteringField field="sepal_width" compareFunction="absDiff"/>
         <ClusteringField field="petal_length" compareFunction="absDiff"/>
