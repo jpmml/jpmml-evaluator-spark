@@ -48,6 +48,7 @@ case class PmmlTransformer(
                             outputCol: String = "pmml") extends Transformer {
   if (outputCol == null)
     throw new IllegalArgumentException
+  override val uid = "pmml-transformer"
 
   /**
     * The output schema which is derived from the producers
@@ -67,7 +68,6 @@ case class PmmlTransformer(
     evaluator.getActiveFields.map(_.getName.getValue).toArray
   }
 
-  override val uid = "pmml"
 
   override def copy(extra: ParamMap) = throw new UnsupportedOperationException
 
@@ -91,7 +91,7 @@ case class PmmlTransformer(
 
       val result: mutable.Map[FieldName, _] = evaluator.evaluate(arguments.asJava).asScala
 
-      val formattedvalues = columnProducers
+      val formattedvalues: Array[Any] = columnProducers
         .map(columnProducer => {
           columnProducer.format(result(columnProducer.field.getName))
         }).toArray

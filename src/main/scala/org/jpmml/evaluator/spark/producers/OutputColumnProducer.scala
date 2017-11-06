@@ -25,17 +25,16 @@ import org.jpmml.evaluator.spark.ColumnProducer
 import org.jpmml.evaluator.spark.support.SchemaUtil
 
 object OutputColumnProducer {
-  private def getName(field: OutputField) = field.getName.getValue
+  def getName(field: OutputField) = field.getName.getValue
+
+  def apply(field: OutputField, columnName: String): OutputColumnProducer =
+    new OutputColumnProducer(field, Option(columnName).getOrElse(getName(field)))
 }
 
-class OutputColumnProducer private[spark](
+class OutputColumnProducer private[producers](
                                            override val field: OutputField,
                                            override val columnName: String) extends
-  ColumnProducer[OutputField](field,
-    if (columnName != null)
-      columnName
-    else
-      OutputColumnProducer.getName(field)) {
+  ColumnProducer[OutputField](field, columnName) {
 
   private var formatString = false
 

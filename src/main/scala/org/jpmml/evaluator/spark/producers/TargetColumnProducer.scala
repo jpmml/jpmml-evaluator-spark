@@ -25,20 +25,18 @@ import org.jpmml.evaluator.{Evaluator, TargetField}
 
 
 object TargetColumnProducer {
-  private def getName(field: TargetField): String = {
+  def getName(field: TargetField): String = {
     if (field.isSynthetic) return "_target"
     field.getName.getValue
   }
+
+  def apply(field: TargetField, columnName: String): TargetColumnProducer =
+    new TargetColumnProducer(field, Option(columnName).getOrElse(TargetColumnProducer.getName(field)))
 }
 
 /** Column producer for the target field **/
-class TargetColumnProducer private[spark](override val field: TargetField, override val columnName: String)
-  extends ColumnProducer[TargetField](field,
-    if (columnName != null)
-      columnName
-    else
-      TargetColumnProducer.getName(field)
-  ) {
+class TargetColumnProducer private[producers](override val field: TargetField, override val columnName: String)
+  extends ColumnProducer[TargetField](field, columnName) {
 
   /** Init and return a spark struct **/
   override def init(evaluator: Evaluator): StructField = {
