@@ -23,7 +23,7 @@ Declare JPMML-Evaluator-Spark dependency:
 <dependency>
 	<groupId>org.jpmml</groupId>
 	<artifactId>jpmml-evaluator-spark</artifactId>
-	<version>1.1-SNAPSHOT</version>
+	<version>1.2-SNAPSHOT</version>
 </dependency>
 ```
 
