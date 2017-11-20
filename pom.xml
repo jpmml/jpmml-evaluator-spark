@@ -10,7 +10,7 @@
 
 	<groupId>org.jpmml</groupId>
 	<artifactId>jpmml-evaluator-spark</artifactId>
-	<version>1.2-SNAPSHOT</version>
+	<version>1.2.0</version>
 
 	<name>JPMML-Evaluator-Spark</name>
 	<description>PMML evaluator library for the Apache Spark cluster computing system (http://spark.apache.org/)</description>
@@ -35,7 +35,7 @@
 		<connection>scm:git:git@github.com:jpmml/jpmml-evaluator-spark.git</connection>
 		<developerConnection>scm:git:git@github.com:jpmml/jpmml-evaluator-spark.git</developerConnection>
 		<url>git://github.com/jpmml/jpmml-evaluator-spark.git</url>
-		<tag>HEAD</tag>
+		<tag>1.2.0</tag>
 	</scm>
 	<issueManagement>
 		<system>GitHub</system>
