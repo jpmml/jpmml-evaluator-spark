@@ -13,17 +13,15 @@ PMML evaluator library for the Apache Spark cluster computing system (http://spa
 
 # Installation #
 
-Enter the project root directory and build using [Apache Maven](http://maven.apache.org/):
-```
-mvn clean install
-```
+JPMML-Evaluator-Spark library JAR file (together with accompanying Java source and Javadocs JAR files) is released via [Maven Central Repository](http://repo1.maven.org/maven2/org/jpmml/).
 
-Declare JPMML-Evaluator-Spark dependency:
+The current version is **1.0.0** (13 June, 2017).
+
 ```xml
 <dependency>
 	<groupId>org.jpmml</groupId>
 	<artifactId>jpmml-evaluator-spark</artifactId>
-	<version>1.1-SNAPSHOT</version>
+	<version>1.2-SNAPSHOT</version>
 </dependency>
 ```
 
