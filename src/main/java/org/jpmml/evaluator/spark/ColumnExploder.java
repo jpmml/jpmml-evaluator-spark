@@ -21,7 +21,8 @@ package org.jpmml.evaluator.spark;
 import org.apache.spark.ml.Transformer;
 import org.apache.spark.ml.param.ParamMap;
 import org.apache.spark.sql.Column;
-import org.apache.spark.sql.DataFrame;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 
@@ -59,22 +60,22 @@ public class ColumnExploder extends Transformer {
 	}
 
 	@Override
-	public DataFrame transform(DataFrame dataFrame){
-		StructType schema = dataFrame.schema();
+	public Dataset<Row> transform(Dataset<?> dataset){
+		StructType schema = dataset.schema();
 
 		StructType structSchema = getStructSchema(schema);
 
-		Column structColumn = dataFrame.apply(DataFrameUtil.escapeColumnName(getStructCol()));
+		Column structColumn = dataset.apply(DatasetUtil.escapeColumnName(getStructCol()));
 
-		DataFrame result = dataFrame;
+		Dataset<Row> result = dataset.toDF();
 
 		StructField[] fields = structSchema.fields();
 		for(StructField field : fields){
 			String name = field.name();
 
-			Column fieldColumn = structColumn.getField(DataFrameUtil.escapeColumnName(name));
+			Column fieldColumn = structColumn.getField(DatasetUtil.escapeColumnName(name));
 
-			result = result.withColumn(DataFrameUtil.escapeColumnName(name), fieldColumn);
+			result = result.withColumn(DatasetUtil.escapeColumnName(name), fieldColumn);
 		}
 
 		return result;

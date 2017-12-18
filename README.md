@@ -9,7 +9,7 @@ PMML evaluator library for the Apache Spark cluster computing system (http://spa
 
 # Prerequisites #
 
-* Apache Spark version 1.5.X or 1.6.X.
+* Apache Spark version 1.5.X, 1.6.X or 2.0.X.
 
 # Installation #
 
@@ -21,7 +21,7 @@ The current version is **1.0.0** (13 June, 2017).
 <dependency>
 	<groupId>org.jpmml</groupId>
 	<artifactId>jpmml-evaluator-spark</artifactId>
-	<version>1.0.0</version>
+	<version>1.2-SNAPSHOT</version>
 </dependency>
 ```
 
