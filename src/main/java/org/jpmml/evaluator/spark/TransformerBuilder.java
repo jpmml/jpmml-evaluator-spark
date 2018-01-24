@@ -18,22 +18,23 @@
  */
 package org.jpmml.evaluator.spark;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.spark.ml.PipelineModel;
 import org.apache.spark.ml.Transformer;
 import org.apache.spark.ml.feature.ColumnPruner;
 import org.dmg.pmml.ResultFeature;
 import org.jpmml.evaluator.Evaluator;
 import org.jpmml.evaluator.OutputField;
+import org.jpmml.evaluator.ResultField;
 import org.jpmml.evaluator.TargetField;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class TransformerBuilder {
 
 	private Evaluator evaluator = null;
 
-	private List<ColumnProducer<?>> columnProducers = new ArrayList<>();
+	private List<ColumnProducer<? extends ResultField>> columnProducers = new ArrayList<>();
 
 	private boolean exploded = false;
 
