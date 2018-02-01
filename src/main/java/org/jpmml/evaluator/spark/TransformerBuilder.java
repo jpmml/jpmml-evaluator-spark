@@ -29,6 +29,7 @@ import org.jpmml.evaluator.Evaluator;
 import org.jpmml.evaluator.OutputField;
 import org.jpmml.evaluator.ResultField;
 import org.jpmml.evaluator.TargetField;
+import scala.collection.immutable.Set;
 
 public class TransformerBuilder {
 
@@ -141,7 +142,7 @@ public class TransformerBuilder {
 		if(this.exploded){
 			ColumnExploder columnExploder = new ColumnExploder(pmmlTransformer.getOutputCol());
 
-			ColumnPruner columnPruner = new ColumnPruner(ScalaUtil.singletonSet(pmmlTransformer.getOutputCol()));
+			ColumnPruner columnPruner = new ColumnPruner(new Set.Set1<>(pmmlTransformer.getOutputCol()));
 
 			PipelineModel pipelineModel = new PipelineModel(null, new Transformer[]{pmmlTransformer, columnExploder, columnPruner});
 
