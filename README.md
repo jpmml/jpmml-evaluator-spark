@@ -9,7 +9,7 @@ PMML evaluator library for the Apache Spark cluster computing system (http://spa
 
 # Prerequisites #
 
-* Apache Spark version 2.0.X, 2.1.X or 2.2.X.
+* Apache Spark version 2.0.X, 2.1.X, 2.2.X or 2.3.X.
 
 # Installation #
 
