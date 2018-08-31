@@ -22,10 +22,7 @@ import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
 import org.dmg.pmml.DataType;
 import org.jpmml.evaluator.Evaluator;
-import org.jpmml.evaluator.ModelEvaluator;
 import org.jpmml.evaluator.OutputField;
-import org.jpmml.evaluator.OutputUtil;
-import org.jpmml.evaluator.PMMLException;
 
 class OutputColumnProducer extends ColumnProducer<OutputField> {
 
@@ -42,16 +39,9 @@ class OutputColumnProducer extends ColumnProducer<OutputField> {
 
 		DataType dataType = field.getDataType();
 		if(dataType == null){
+			dataType = DataType.STRING;
 
-			try {
-				dataType = OutputUtil.getDataType(field.getOutputField(), (ModelEvaluator<?>)evaluator);
-
-				this.formatString = false;
-			} catch(PMMLException pe){
-				dataType = DataType.STRING;
-
-				this.formatString = true;
-			}
+			this.formatString = true;
 		}
 
 		return DataTypes.createStructField(getColumnName(), SchemaUtil.translateDataType(dataType), false);
