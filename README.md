@@ -9,7 +9,7 @@ PMML evaluator library for the Apache Spark cluster computing system (http://spa
 
 # Prerequisites #
 
-* Apache Spark version 2.0.X, 2.1.X, 2.2.X or 2.3.X.
+* Apache Spark version 2.0.X, 2.1.X, 2.2.X, 2.3.X or 2.4.X.
 
 # Installation #
 
@@ -60,8 +60,9 @@ TransformerBuilder pmmlTransformerBuilder = new TransformerBuilder(evaluator)
 
 Scoring data:
 ```java
-DataFrame input = ...;
-DataFrame output = pmmlTransformer.transform(input);
+Dataset<?> inputDs = ...;
+
+Dataset<?> resultDs = pmmlTransformer.transform(inputDs);
 ```
 
 In default mode, the transformation appends an intermediary "pmml" column to the data frame, which contains all the requested result columns:
