@@ -27,10 +27,9 @@
  */
 package org.jpmml.evaluator.spark
 
-import java.io.File
-
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
+import org.jpmml.evaluator.LoadingModelEvaluatorBuilder
 import org.scalatest.FunSuite
 
 // Helper object for case class for Spark
@@ -66,10 +65,12 @@ class PMMLTransformerTest extends FunSuite {
 		val expectedResultDs = sparkSession.createDataFrame(expectedResultRdd)
 
 		// Load the PMML
-		val pmmlFile = new File(getClass.getClassLoader.getResource("DecisionTreeIris.pmml").getFile)
+		val pmmlIs = getClass.getClassLoader.getResourceAsStream("DecisionTreeIris.pmml")
 
 		// Create the evaluator
-		val evaluator = EvaluatorUtil.createEvaluator(pmmlFile)
+		val evaluator = new LoadingModelEvaluatorBuilder()
+			.load(pmmlIs)
+			.build()
 
 		// Create the transformer
 		val pmmlTransformer = new TransformerBuilder(evaluator)

@@ -29,11 +29,17 @@ The current version is **1.2.0** (1 September, 2018).
 
 # Usage #
 
-Building a generic transformer based on a PMML document in local filesystem:
+Building a generic transformer based on a PMML byte stream:
 ```java
-File pmmlFile = ...;
+InputStream pmmlIs = ...;
 
-Evaluator evaluator = EvaluatorUtil.createEvaluator(pmmlFile);
+EvaluatorBuilder evaluatorBuilder = new LoadingModelEvaluatorBuilder()
+	.load(pmmlIs);
+
+Evaluator evaluator = evaluatorBuilder.build();
+
+// Performing a self-check (duplicates as a warm-up)
+evaluator.verify();
 
 TransformerBuilder pmmlTransformerBuilder = new TransformerBuilder(evaluator)
 	.withTargetCols()

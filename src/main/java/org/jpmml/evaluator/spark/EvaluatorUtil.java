@@ -30,11 +30,19 @@ import org.jpmml.evaluator.EvaluatorBuilder;
 import org.jpmml.evaluator.LoadingModelEvaluatorBuilder;
 import org.xml.sax.SAXException;
 
+/**
+ * @see LoadingModelEvaluatorBuilder
+ */
 public class EvaluatorUtil {
 
 	private EvaluatorUtil(){
 	}
 
+	/**
+	 * @see LoadingModelEvaluatorBuilder#load(File)
+	 * @see LoadingModelEvaluatorBuilder#load(File, String)
+	 */
+	@Deprecated
 	static
 	public Evaluator createEvaluator(File file) throws IOException, SAXException, JAXBException {
 
@@ -43,6 +51,11 @@ public class EvaluatorUtil {
 		}
 	}
 
+	/**
+	 * @see LoadingModelEvaluatorBuilder#load(InputStream)
+	 * @see LoadingModelEvaluatorBuilder#load(InputStream, String)
+	 */
+	@Deprecated
 	static
 	public Evaluator createEvaluator(InputStream is) throws SAXException, JAXBException {
 		EvaluatorBuilder evaluatorBuilder = new LoadingModelEvaluatorBuilder()
