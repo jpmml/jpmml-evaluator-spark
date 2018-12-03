@@ -88,7 +88,7 @@ public class TransformerBuilder {
 
 		List<OutputField> outputFields = evaluator.getOutputFields();
 		for(OutputField outputField : outputFields){
-			org.dmg.pmml.OutputField pmmlOutputField = outputField.getOutputField();
+			org.dmg.pmml.OutputField pmmlOutputField = outputField.getField();
 
 			ResultFeature resultFeature = pmmlOutputField.getResultFeature();
 			switch(resultFeature){

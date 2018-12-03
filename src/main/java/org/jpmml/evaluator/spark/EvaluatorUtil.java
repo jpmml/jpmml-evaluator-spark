@@ -25,11 +25,9 @@ import java.io.InputStream;
 
 import javax.xml.bind.JAXBException;
 
-import org.dmg.pmml.PMML;
 import org.jpmml.evaluator.Evaluator;
-import org.jpmml.evaluator.ModelEvaluatorFactory;
-import org.jpmml.model.PMMLUtil;
-import org.jpmml.model.visitors.LocatorTransformer;
+import org.jpmml.evaluator.EvaluatorBuilder;
+import org.jpmml.evaluator.LoadingModelEvaluatorBuilder;
 import org.xml.sax.SAXException;
 
 public class EvaluatorUtil {
@@ -47,15 +45,10 @@ public class EvaluatorUtil {
 
 	static
 	public Evaluator createEvaluator(InputStream is) throws SAXException, JAXBException {
-		PMML pmml = PMMLUtil.unmarshal(is);
+		EvaluatorBuilder evaluatorBuilder = new LoadingModelEvaluatorBuilder()
+			.load(is);
 
-		// If the SAX Locator information is available, then transform it to java.io.Serializable representation
-		LocatorTransformer locatorTransformer = new LocatorTransformer();
-		locatorTransformer.applyTo(pmml);
-
-		ModelEvaluatorFactory modelEvaluatorFactory = ModelEvaluatorFactory.newInstance();
-
-		Evaluator evaluator = modelEvaluatorFactory.newModelEvaluator(pmml);
+		Evaluator evaluator = evaluatorBuilder.build();
 
 		// Perform self-testing
 		evaluator.verify();
