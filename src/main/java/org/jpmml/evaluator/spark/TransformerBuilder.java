@@ -20,13 +20,19 @@ package org.jpmml.evaluator.spark;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.apache.spark.ml.PipelineModel;
 import org.apache.spark.ml.Transformer;
 import org.apache.spark.ml.feature.ColumnPruner;
+import org.dmg.pmml.FieldName;
 import org.dmg.pmml.ResultFeature;
 import org.jpmml.evaluator.Evaluator;
+import org.jpmml.evaluator.MissingAttributeException;
 import org.jpmml.evaluator.OutputField;
+import org.jpmml.evaluator.PMMLAttributes;
 import org.jpmml.evaluator.ResultField;
 import org.jpmml.evaluator.TargetField;
 import scala.collection.immutable.Set;
@@ -58,12 +64,7 @@ public class TransformerBuilder {
 	public TransformerBuilder withLabelCol(String columnName){
 		Evaluator evaluator = getEvaluator();
 
-		List<TargetField> targetFields = evaluator.getTargetFields();
-		if(targetFields.size() != 1){
-			throw new IllegalArgumentException();
-		}
-
-		TargetField targetField = targetFields.get(0);
+		TargetField targetField = getTargetField(evaluator);
 
 		this.columnProducers.add(new TargetColumnProducer(targetField, columnName));
 
@@ -77,42 +78,28 @@ public class TransformerBuilder {
 	public TransformerBuilder withProbabilityCol(String columnName, List<String> labels){
 		Evaluator evaluator = getEvaluator();
 
-		List<TargetField> targetFields = evaluator.getTargetFields();
-		if(targetFields.size() != 1){
-			throw new IllegalArgumentException();
+		TargetField targetField = getTargetField(evaluator);
+
+		List<OutputField> probabilityOutputFields = getProbabilityFields(evaluator, targetField);
+
+		List<String> targetCategories = probabilityOutputFields.stream()
+			.map(probabilityOutputField -> {
+				org.dmg.pmml.OutputField pmmlOutputField = probabilityOutputField.getField();
+
+				String value = pmmlOutputField.getValue();
+				if(value == null){
+					throw new MissingAttributeException(pmmlOutputField, PMMLAttributes.OUTPUTFIELD_VALUE);
+				}
+
+				return value;
+			})
+			.collect(Collectors.toList());
+
+		if((labels != null) && (labels.size() != targetCategories.size() || !labels.containsAll(targetCategories))){
+			throw new IllegalArgumentException("Model has an incompatible set of probability-type output fields (expected " + labels + ", got " + targetCategories + ")");
 		}
 
-		TargetField targetField = targetFields.get(0);
-
-		List<String> values = new ArrayList<>();
-
-		List<OutputField> outputFields = evaluator.getOutputFields();
-		for(OutputField outputField : outputFields){
-			org.dmg.pmml.OutputField pmmlOutputField = outputField.getField();
-
-			ResultFeature resultFeature = pmmlOutputField.getResultFeature();
-			switch(resultFeature){
-				case PROBABILITY:
-					String value = pmmlOutputField.getValue();
-
-					if(value != null){
-						values.add(value);
-					}
-					break;
-				default:
-					break;
-			}
-		}
-
-		if(values.isEmpty()){
-			throw new IllegalArgumentException();
-		} // End if
-
-		if(labels != null && (labels.size() != values.size() || !labels.containsAll(values))){
-			throw new IllegalArgumentException();
-		}
-
-		this.columnProducers.add(new ProbabilityColumnProducer(targetField, columnName, labels != null ? labels : values));
+		this.columnProducers.add(new ProbabilityColumnProducer(targetField, columnName, labels != null ? labels : targetCategories));
 
 		return this;
 	}
@@ -158,5 +145,53 @@ public class TransformerBuilder {
 
 	private void setEvaluator(Evaluator evaluator){
 		this.evaluator = evaluator;
+	}
+
+	static
+	private TargetField getTargetField(Evaluator evaluator){
+		List<TargetField> targetFields = evaluator.getTargetFields();
+
+		if(targetFields.size() < 1){
+			throw new IllegalArgumentException("Model does not have a target field");
+		} else
+
+		if(targetFields.size() > 1){
+			throw new IllegalArgumentException("Model has multiple target fields (" + targetFields + ")");
+		}
+
+		return targetFields.get(0);
+	}
+
+	static
+	private List<OutputField> getProbabilityFields(Evaluator evaluator, TargetField targetField){
+		List<OutputField> outputFields = evaluator.getOutputFields();
+
+		Predicate<OutputField> predicate = new Predicate<OutputField>(){
+
+			@Override
+			public boolean test(OutputField outputField){
+				org.dmg.pmml.OutputField pmmlOutputField = outputField.getField();
+
+				ResultFeature resultFeature = pmmlOutputField.getResultFeature();
+				switch(resultFeature){
+					case PROBABILITY:
+						FieldName targetFieldName = pmmlOutputField.getTargetField();
+
+						return Objects.equals(targetFieldName, null) || Objects.equals(targetFieldName, targetField.getName());
+					default:
+						return false;
+				}
+			}
+		};
+
+		List<OutputField> probabilityOutputFields = outputFields.stream()
+			.filter(predicate)
+			.collect(Collectors.toList());
+
+		if(probabilityOutputFields.size() < 1){
+			throw new IllegalArgumentException("Model does not have probability-type output fields");
+		}
+
+		return probabilityOutputFields;
 	}
 }

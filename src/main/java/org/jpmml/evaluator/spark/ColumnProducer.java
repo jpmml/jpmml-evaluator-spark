@@ -19,6 +19,7 @@
 package org.jpmml.evaluator.spark;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import org.apache.spark.sql.types.StructField;
 import org.jpmml.evaluator.Evaluator;
@@ -33,8 +34,8 @@ class ColumnProducer<F extends ResultField> implements Serializable {
 
 
 	ColumnProducer(F field, String columnName){
-		setField(field);
-		setColumnName(columnName);
+		setField(Objects.requireNonNull(field));
+		setColumnName(Objects.requireNonNull(columnName));
 	}
 
 	abstract
@@ -56,11 +57,6 @@ class ColumnProducer<F extends ResultField> implements Serializable {
 	}
 
 	private void setColumnName(String columnName){
-
-		if(columnName == null){
-			throw new IllegalArgumentException();
-		}
-
 		this.columnName = columnName;
 	}
 }
