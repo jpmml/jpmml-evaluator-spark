@@ -50,6 +50,13 @@ public class TransformerBuilder {
 		setEvaluator(evaluator);
 	}
 
+	/**
+	 * <p>
+	 * Appends all target fields.
+	 * </p>
+	 *
+	 * @see Evaluator#getTargetFields()
+	 */
 	public TransformerBuilder withTargetCols(){
 		Evaluator evaluator = getEvaluator();
 
@@ -61,6 +68,31 @@ public class TransformerBuilder {
 		return this;
 	}
 
+	/**
+	 * <p>
+	 * Appends all output fields.
+	 * </p>
+	 *
+	 * @see Evaluator#getOutputFields()
+	 */
+	public TransformerBuilder withOutputCols(){
+		Evaluator evaluator = getEvaluator();
+
+		List<OutputField> outputFields = evaluator.getOutputFields();
+		for(OutputField outputField : outputFields){
+			this.columnProducers.add(new OutputColumnProducer(outputField, null));
+		}
+
+		return this;
+	}
+
+	/**
+	 * <p>
+	 * Appends the sole target field of a regression or classification model.
+	 * </p>
+	 *
+	 * @param columnName The name of the target column.
+	 */
 	public TransformerBuilder withLabelCol(String columnName){
 		Evaluator evaluator = getEvaluator();
 
@@ -75,6 +107,14 @@ public class TransformerBuilder {
 		return withProbabilityCol(columnName, null);
 	}
 
+	/**
+	 * <p>
+	 * Appends the probability distribution associated with the sole target field of a classification model.
+	 * </p>
+	 *
+	 * @param columnName The name of the probability column.
+	 * @param labels The ordering of class label elements in the vector.
+	 */
 	public TransformerBuilder withProbabilityCol(String columnName, List<String> labels){
 		Evaluator evaluator = getEvaluator();
 
@@ -100,17 +140,6 @@ public class TransformerBuilder {
 		}
 
 		this.columnProducers.add(new ProbabilityColumnProducer(targetField, columnName, labels != null ? labels : targetCategories));
-
-		return this;
-	}
-
-	public TransformerBuilder withOutputCols(){
-		Evaluator evaluator = getEvaluator();
-
-		List<OutputField> outputFields = evaluator.getOutputFields();
-		for(OutputField outputField : outputFields){
-			this.columnProducers.add(new OutputColumnProducer(outputField, null));
-		}
 
 		return this;
 	}
