@@ -1,7 +1,7 @@
 JPMML-Evaluator-Spark [![Build Status](https://travis-ci.org/jpmml/jpmml-evaluator-spark.png?branch=master)](https://travis-ci.org/jpmml/jpmml-evaluator-spark)
 =====================
 
-PMML evaluator library for the Apache Spark cluster computing system (http://spark.apache.org/).
+PMML evaluator library for the Apache Spark cluster computing system (https://spark.apache.org/).
 
 # Features #
 
@@ -13,7 +13,7 @@ PMML evaluator library for the Apache Spark cluster computing system (http://spa
 
 # Installation #
 
-The JPMML-Evaluator-Spark library JAR file (together with accompanying Java source and Javadocs JAR files) is released via [Maven Central Repository](http://repo1.maven.org/maven2/org/jpmml/).
+The JPMML-Evaluator-Spark library JAR file (together with accompanying Java source and Javadocs JAR files) is released via [Maven Central Repository](https://repo1.maven.org/maven2/org/jpmml/).
 
 The current version is **1.2.1** (4 December, 2018).
 
@@ -34,6 +34,8 @@ Building a generic transformer based on a PMML byte stream:
 InputStream pmmlIs = ...;
 
 EvaluatorBuilder evaluatorBuilder = new LoadingModelEvaluatorBuilder()
+	.setLocatable(false)
+	.setVisitors(new DefaultVisitorBattery())
 	.load(pmmlIs);
 
 Evaluator evaluator = evaluatorBuilder.build();
@@ -96,7 +98,7 @@ root
 
 # License #
 
-JPMML-Evaluator-Spark is dual-licensed under the [GNU Affero General Public License (AGPL) version 3.0](http://www.gnu.org/licenses/agpl-3.0.html), and a commercial license.
+JPMML-Evaluator-Spark is dual-licensed under the [GNU Affero General Public License (AGPL) version 3.0](https://www.gnu.org/licenses/agpl-3.0.html), and a commercial license.
 
 # Additional information #
 
