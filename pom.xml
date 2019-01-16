@@ -152,6 +152,46 @@
 				</executions>
 			</plugin>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>3.2.1</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<finalName>${project.artifactId}-runtime-${project.version}</finalName>
+							<filters>
+								<filter>
+									<artifact>*:*</artifact>
+									<excludes>
+										<exclude>META-INF/*.SF</exclude>
+										<exclude>META-INF/*.DSA</exclude>
+										<exclude>META-INF/*.RSA</exclude>
+									</excludes>
+								</filter>
+							</filters>
+							<relocations>
+								<relocation>
+									<pattern>org.dmg.pmml</pattern>
+									<shadedPattern>org.shaded.dmg.pmml</shadedPattern>
+								</relocation>
+								<relocation>
+									<pattern>org.jpmml.agent</pattern>
+									<shadedPattern>org.shaded.jpmml.agent</shadedPattern>
+								</relocation>
+								<relocation>
+									<pattern>org.jpmml.model</pattern>
+									<shadedPattern>org.shaded.jpmml.model</shadedPattern>
+								</relocation>
+							</relocations>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
 				<groupId>net.alchim31.maven</groupId>
 				<artifactId>scala-maven-plugin</artifactId>
 				<version>3.3.2</version>
@@ -215,6 +255,23 @@
 						</goals>
 						<configuration>
 							<argLine>${jacoco.agent}</argLine>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>de.jutzig</groupId>
+				<artifactId>github-release-plugin</artifactId>
+				<version>1.2.0</version>
+				<executions>
+					<execution>
+						<id>default-cli</id>
+						<configuration>
+							<artifact>${project.build.directory}/${project.artifactId}-runtime-${project.version}.${project.packaging}</artifact>
+							<description>https://github.com/jpmml/jpmml-evaluator-spark</description>
+							<releaseName>${project.version}</releaseName>
+							<repositoryId>jpmml/jpmml-evaluator-spark</repositoryId>
+							<tag>${project.version}</tag>
 						</configuration>
 					</execution>
 				</executions>
