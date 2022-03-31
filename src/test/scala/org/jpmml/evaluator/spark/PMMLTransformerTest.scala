@@ -90,6 +90,8 @@ class PMMLTransformerTest extends FunSuite {
 			.exploded(true)
 			.build()
 
+		sparkSession.sql("set spark.sql.legacy.allowUntypedScalaUDF=true")
+
 		// Verify the transformed results
 		var resultDs = pmmlTransformer.transform(inputDs)
 		resultDs.show
