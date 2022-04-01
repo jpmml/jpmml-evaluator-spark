@@ -28,13 +28,14 @@ import org.apache.spark.ml.PipelineModel;
 import org.apache.spark.ml.Transformer;
 import org.apache.spark.ml.feature.ColumnPruner;
 import org.dmg.pmml.FieldName;
+import org.dmg.pmml.PMMLAttributes;
 import org.dmg.pmml.ResultFeature;
 import org.jpmml.evaluator.Evaluator;
 import org.jpmml.evaluator.MissingAttributeException;
 import org.jpmml.evaluator.OutputField;
-import org.jpmml.evaluator.PMMLAttributes;
 import org.jpmml.evaluator.ResultField;
 import org.jpmml.evaluator.TargetField;
+import org.jpmml.evaluator.TypeUtil;
 import scala.collection.immutable.Set;
 
 public class TransformerBuilder {
@@ -126,12 +127,12 @@ public class TransformerBuilder {
 			.map(probabilityOutputField -> {
 				org.dmg.pmml.OutputField pmmlOutputField = probabilityOutputField.getField();
 
-				String value = pmmlOutputField.getValue();
+				Object value = pmmlOutputField.getValue();
 				if(value == null){
 					throw new MissingAttributeException(pmmlOutputField, PMMLAttributes.OUTPUTFIELD_VALUE);
 				}
 
-				return value;
+				return TypeUtil.format(value);
 			})
 			.collect(Collectors.toList());
 
