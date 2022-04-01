@@ -35,7 +35,6 @@ InputStream pmmlIs = ...;
 
 EvaluatorBuilder evaluatorBuilder = new LoadingModelEvaluatorBuilder()
 	.setLocatable(false)
-	.setVisitors(new DefaultVisitorBattery())
 	.load(pmmlIs);
 
 Evaluator evaluator = evaluatorBuilder.build();

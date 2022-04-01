@@ -90,7 +90,7 @@ class PMMLTransformer(evaluator: Evaluator, columnProducers: java.util.List[Colu
 		// Map input fields to Dataset Columns, and escape special characters
 		val columns: Seq[Column] = evaluator.getInputFields.asScala.map { inputField: InputField =>
 			ds(
-				DatasetUtil.escapeColumnName(inputField.getName.getValue)
+				DatasetUtil.escapeColumnName(inputField.getName)
 			)
 		}
 

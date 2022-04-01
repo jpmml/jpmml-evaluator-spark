@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.jpmml</groupId>
 		<artifactId>jpmml-evaluator</artifactId>
-		<version>1.5.16</version>
+		<version>1.6.3</version>
 	</parent>
 
 	<groupId>org.jpmml</groupId>
@@ -58,7 +58,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.jpmml</groupId>
-			<artifactId>pmml-evaluator-extension</artifactId>
+			<artifactId>pmml-evaluator-metro</artifactId>
 		</dependency>
 
 		<dependency>

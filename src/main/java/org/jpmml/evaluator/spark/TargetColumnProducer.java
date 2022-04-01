@@ -51,6 +51,6 @@ class TargetColumnProducer extends ColumnProducer<TargetField> {
 			return "_target";
 		}
 
-		return (field.getName()).getValue();
+		return field.getName();
 	}
 }

@@ -23,8 +23,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import javax.xml.bind.JAXBException;
+import javax.xml.parsers.ParserConfigurationException;
 
+import jakarta.xml.bind.JAXBException;
 import org.jpmml.evaluator.Evaluator;
 import org.jpmml.evaluator.EvaluatorBuilder;
 import org.jpmml.evaluator.LoadingModelEvaluatorBuilder;
@@ -44,7 +45,7 @@ public class EvaluatorUtil {
 	 */
 	@Deprecated
 	static
-	public Evaluator createEvaluator(File file) throws IOException, SAXException, JAXBException {
+	public Evaluator createEvaluator(File file) throws IOException, ParserConfigurationException, SAXException, JAXBException {
 
 		try(InputStream is = new FileInputStream(file)){
 			return createEvaluator(is);
@@ -57,7 +58,7 @@ public class EvaluatorUtil {
 	 */
 	@Deprecated
 	static
-	public Evaluator createEvaluator(InputStream is) throws SAXException, JAXBException {
+	public Evaluator createEvaluator(InputStream is) throws ParserConfigurationException, SAXException, JAXBException {
 		EvaluatorBuilder evaluatorBuilder = new LoadingModelEvaluatorBuilder()
 			.load(is);
 

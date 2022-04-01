@@ -59,6 +59,6 @@ class OutputColumnProducer extends ColumnProducer<OutputField> {
 
 	static
 	private String getName(OutputField field){
-		return (field.getName()).getValue();
+		return field.getName();
 	}
 }
