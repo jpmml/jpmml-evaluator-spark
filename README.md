@@ -5,7 +5,7 @@ PMML evaluator library for the Apache Spark cluster computing system (https://sp
 
 # Features #
 
-* Full support for PMML specification versions 3.0 through 4.3. The evaluation is handled by the [JPMML-Evaluator](https://github.com/jpmml/jpmml-evaluator) library.
+* Full support for PMML specification versions 3.0 through 4.4. The evaluation is handled by the [JPMML-Evaluator](https://github.com/jpmml/jpmml-evaluator) library.
 
 # Prerequisites #
 
@@ -15,13 +15,13 @@ PMML evaluator library for the Apache Spark cluster computing system (https://sp
 
 The JPMML-Evaluator-Spark library JAR file (together with accompanying Java source and Javadocs JAR files) is released via [Maven Central Repository](https://repo1.maven.org/maven2/org/jpmml/).
 
-The current version is **1.2.2** (16 January, 2019).
+The current version is **1.2.3** (1 April, 2022).
 
 ```xml
 <dependency>
 	<groupId>org.jpmml</groupId>
 	<artifactId>jpmml-evaluator-spark</artifactId>
-	<version>1.2.2</version>
+	<version>1.2.3</version>
 </dependency>
 ```
 
