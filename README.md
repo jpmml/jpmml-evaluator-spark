@@ -1,4 +1,4 @@
-JPMML-Evaluator-Spark [![Build Status](https://travis-ci.org/jpmml/jpmml-evaluator-spark.png?branch=master)](https://travis-ci.org/jpmml/jpmml-evaluator-spark)
+JPMML-Evaluator-Spark [![Build Status](https://github.com/jpmml/jpmml-evaluator-spark/workflows/maven/badge.svg)](https://github.com/jpmml/jpmml-evaluator-spark/actions?query=workflow%3A%22maven%22)
 =====================
 
 PMML evaluator library for the Apache Spark cluster computing system (https://spark.apache.org/).
