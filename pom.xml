@@ -107,7 +107,7 @@
 						</goals>
 						<configuration>
 							<createDependencyReducedPom>false</createDependencyReducedPom>
-							<finalName>${project.artifactId}-runtime-${project.version}_${scala.version}</finalName>
+							<finalName>${project.artifactId}-runtime-${project.version}</finalName>
 							<filters>
 								<filter>
 									<artifact>*:*</artifact>
