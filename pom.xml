@@ -48,6 +48,8 @@
 	</issueManagement>
 
 	<properties>
+		<scala.version>2.11</scala.version>
+		<scala.impl.version>2.11.12</scala.impl.version>
 		<spark.version>[2.0.0, 2.4.8]</spark.version>
 	</properties>
 
@@ -63,13 +65,13 @@
 
 		<dependency>
 			<groupId>org.apache.spark</groupId>
-			<artifactId>spark-core_2.11</artifactId>
+			<artifactId>spark-core_${scala.version}</artifactId>
 			<version>${spark.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.spark</groupId>
-			<artifactId>spark-mllib_2.11</artifactId>
+			<artifactId>spark-mllib_${scala.version}</artifactId>
 			<version>${spark.version}</version>
 			<scope>provided</scope>
 			<exclusions>
@@ -82,7 +84,7 @@
 
 		<dependency>
 			<groupId>org.scalatest</groupId>
-			<artifactId>scalatest_2.11</artifactId>
+			<artifactId>scalatest_${scala.version}</artifactId>
 			<version>3.0.5</version>
 			<scope>test</scope>
 		</dependency>
@@ -140,7 +142,7 @@
 					<jvmArgs>
 						<jvmArg>-Xmx1024m</jvmArg>
 					</jvmArgs>
-					<scalaVersion>2.11</scalaVersion>
+					<scalaVersion>${scala.impl.version}</scalaVersion>
 				</configuration>
 				<executions>
 					<execution>
@@ -202,4 +204,17 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<profiles>
+		<profile>
+			<activation>
+				<jdk>11</jdk>
+			</activation>
+
+			<properties>
+				<scala.version>2.12</scala.version>
+				<scala.impl.version>2.12.15</scala.impl.version>
+			</properties>
+		</profile>
+	</profiles>
 </project>
