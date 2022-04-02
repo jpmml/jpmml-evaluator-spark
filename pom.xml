@@ -48,9 +48,9 @@
 	</issueManagement>
 
 	<properties>
-		<scala.version>2.11</scala.version>
-		<scala.impl.version>2.11.12</scala.impl.version>
-		<spark.version>[2.0.0, 2.4.8]</spark.version>
+		<scala.version>2.12</scala.version>
+		<scala.impl.version>2.12.15</scala.impl.version>
+		<spark.version>[3.0.0, 3.2.1]</spark.version>
 	</properties>
 
 	<dependencies>
@@ -74,12 +74,15 @@
 			<artifactId>spark-mllib_${scala.version}</artifactId>
 			<version>${spark.version}</version>
 			<scope>provided</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>org.jpmml</groupId>
-					<artifactId>pmml-model</artifactId>
-				</exclusion>
-			</exclusions>
+		</dependency>
+
+		<!-- Inherited from org.jpmml:pmml-model-metro dependency -->
+		<dependency>
+			<groupId>org.glassfish.jaxb</groupId>
+			<artifactId>jaxb-runtime</artifactId>
+			<version>3.0.2</version>
+			<!-- XXX -->
+			<scope>test</scope>
 		</dependency>
 
 		<dependency>
@@ -115,20 +118,6 @@
 									</excludes>
 								</filter>
 							</filters>
-							<relocations>
-								<relocation>
-									<pattern>org.dmg.pmml</pattern>
-									<shadedPattern>org.shaded.dmg.pmml</shadedPattern>
-								</relocation>
-								<relocation>
-									<pattern>org.jpmml.agent</pattern>
-									<shadedPattern>org.shaded.jpmml.agent</shadedPattern>
-								</relocation>
-								<relocation>
-									<pattern>org.jpmml.model</pattern>
-									<shadedPattern>org.shaded.jpmml.model</shadedPattern>
-								</relocation>
-							</relocations>
 						</configuration>
 					</execution>
 				</executions>
@@ -204,17 +193,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
-	<profiles>
-		<profile>
-			<activation>
-				<jdk>11</jdk>
-			</activation>
-
-			<properties>
-				<scala.version>2.12</scala.version>
-				<scala.impl.version>2.12.15</scala.impl.version>
-			</properties>
-		</profile>
-	</profiles>
 </project>

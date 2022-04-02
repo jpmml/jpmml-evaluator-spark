@@ -9,7 +9,7 @@ PMML evaluator library for the Apache Spark cluster computing system (https://sp
 
 # Prerequisites #
 
-* Apache Spark version 2.0.X, 2.1.X, 2.2.X, 2.3.X or 2.4.X.
+* Apache Spark version 2.X or 3.X.
 
 # Installation #
 
@@ -24,8 +24,6 @@ The current version is **1.3.0** (2 April, 2022).
 	<version>1.3.0</version>
 </dependency>
 ```
-
-**A note about building and packaging JPMML-Evaluator-Spark applications**. The JPMML-Evaluator library depends on JPMML-Model and Google Guava library versions that are in conflict with the ones that are bundled with Apache Spark and/or Apache Hadoop. This conflict can be easily solved by relocating JPMML-Evaluator library dependencies to a different namespace using the [Apache Maven Shade Plugin](https://maven.apache.org/plugins/maven-shade-plugin/).
 
 # Usage #
 

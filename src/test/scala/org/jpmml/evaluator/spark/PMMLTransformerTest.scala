@@ -54,6 +54,9 @@ class PMMLTransformerTest extends FunSuite {
 					.setMaster("local")
 			).getOrCreate()
 
+		// See https://github.com/jpmml/jpmml-evaluator-spark/issues/43
+		sparkSession.sql("set spark.sql.legacy.allowUntypedScalaUDF=true")
+
 		val inputRdd = sparkSession.sparkContext.makeRDD(Seq(
 			InputRecord(5.1, 3.5, 1.4, 0.2),
 			InputRecord(7, 3.2, 4.7, 1.4),
