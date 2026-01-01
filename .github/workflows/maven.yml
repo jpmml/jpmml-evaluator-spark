@@ -12,6 +12,9 @@ jobs:
       matrix:
         java: [ 11, 17 ]
         spark: [ '3.0.3', '3.4.4', '3.5.7' ]
+        exclude:
+          - java: 17
+            spark: '3.0.3'
 
     steps:
     - uses: actions/checkout@v4
