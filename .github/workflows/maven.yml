@@ -10,16 +10,14 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: [ 8, 11 ]
+        java: [ 11, 17 ]
+        spark: [ '3.0.3', '3.4.4', '3.5.7' ]
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-java@v1
+    - uses: actions/checkout@v4
+    - uses: actions/setup-java@v4
       with:
+        distribution: 'zulu'
         java-version: ${{ matrix.java }}
-    - uses: actions/cache@v2
-      with:
-        path: ~/.m2
-        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-        restore-keys: ${{ runner.os }}-m2
-    - run: mvn -B package --file pom.xml
+        cache: 'maven'
+    - run: mvn -B -Dspark.version=${{ matrix.spark }} package --file pom.xml
