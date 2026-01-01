@@ -203,4 +203,29 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<profiles>
+		<profile>
+			<activation>
+				<jdk>[16, )</jdk>
+			</activation>
+			
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.scalatest</groupId>
+						<artifactId>scalatest-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>test</id>
+								<configuration>
+									<argLine>${jacoco.agent} --add-exports=java.base/sun.nio.ch=ALL-UNNAMED</argLine>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>
