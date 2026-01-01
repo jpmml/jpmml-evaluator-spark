@@ -33,7 +33,7 @@ import org.apache.spark.SparkConf
 import org.apache.spark.mllib.linalg.{Vector, Vectors}
 import org.apache.spark.sql.SparkSession
 import org.jpmml.evaluator.LoadingModelEvaluatorBuilder
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 // Helper object for case class for Spark
 object IrisHelper {
@@ -42,7 +42,7 @@ object IrisHelper {
 	case class CustomResultRecord(label: String, probabilities: Vector)
 }
 
-class PMMLTransformerTest extends FunSuite {
+class PMMLTransformerTest extends AnyFunSuite {
 	import IrisHelper._
 
 	test("Transformer works as expected") {
