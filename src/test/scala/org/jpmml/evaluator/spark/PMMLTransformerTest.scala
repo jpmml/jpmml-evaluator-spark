@@ -1,117 +1,74 @@
 /*
- * Copyright (c) 2018 Interset Software Inc
- * All rights reserved.
+ * Copyright (c) 2026 Villu Ruusmann
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
+ * This file is part of JPMML-Evaluator
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- * 3. Neither the name of the copyright holder nor the names of its contributors
- *    may be used to endorse or promote products derived from this software without
- *    specific prior written permission.
+ * JPMML-Evaluator is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
- * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * JPMML-Evaluator is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with JPMML-Evaluator.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.jpmml.evaluator.spark
 
-import java.util.Arrays
-
-import org.apache.spark.SparkConf
-import org.apache.spark.mllib.linalg.{Vector, Vectors}
-import org.apache.spark.sql.SparkSession
-import org.jpmml.evaluator.LoadingModelEvaluatorBuilder
+import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.jpmml.evaluator.{Evaluator, LoadingModelEvaluatorBuilder}
+import org.scalatest.BeforeAndAfterAll
 import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 
-// Helper object for case class for Spark
-object IrisHelper {
-	case class InputRecord(Sepal_Length: Double, Sepal_Width: Double, Petal_Length: Double, Petal_Width: Double)
-	case class DefaultResultRecord(Species: String, Probability_setosa: Double, Probability_versicolor: Double, Probability_virginica: Double, Node_id: String)
-	case class CustomResultRecord(label: String, probabilities: Vector)
-}
+abstract
+class PMMLTransformerTest extends AnyFunSuite with Matchers with BeforeAndAfterAll {
 
-class PMMLTransformerTest extends AnyFunSuite {
-	import IrisHelper._
+	var spark: SparkSession = _
 
-	test("Transformer works as expected") {
-		implicit val sparkSession = SparkSession
-			.builder()
-			.config(
-				new SparkConf()
-					.setAppName("DecisionTreeIris")
-					.setMaster("local")
-			).getOrCreate()
 
-		// See https://github.com/jpmml/jpmml-evaluator-spark/issues/43
-		sparkSession.sql("set spark.sql.legacy.allowUntypedScalaUDF=true")
+	protected
+	def createPmmlTransformer(evaluator: Evaluator): PMMLTransformer
 
-		val inputRdd = sparkSession.sparkContext.makeRDD(Seq(
-			InputRecord(5.1, 3.5, 1.4, 0.2),
-			InputRecord(7, 3.2, 4.7, 1.4),
-			InputRecord(6.3, 3.3, 6, 2.5)
-		))
-		val inputDs = sparkSession.createDataFrame(inputRdd)
+	override
+	def beforeAll(): Unit = {
+		spark = SparkSession.builder
+			.master("local[*]")
+			.appName("PMMLTransformerTest")
+			.getOrCreate
+	}
 
-		val expectedDefaultResultRdd = sparkSession.sparkContext.makeRDD(Seq(
-			DefaultResultRecord("setosa", 1.0, 0.0, 0.0, "2"),
-			DefaultResultRecord("versicolor", 0.0, 0.9074074074074074, 0.09259259259259259, "6"),
-			DefaultResultRecord("virginica", 0.0, 0.021739130434782608, 0.9782608695652174, "7")
-		))
-		val expectedDefaultResultDs = sparkSession.createDataFrame(expectedDefaultResultRdd)
+	override
+	def afterAll(): Unit = {
+		if (spark != null) {
+			spark.stop()
+		}
+	}
 
-		val expectedCustomResultRdd = sparkSession.sparkContext.makeRDD(Seq(
-			CustomResultRecord("setosa", Vectors.dense(1.0, 0.0, 0.0)),
-			CustomResultRecord("versicolor", Vectors.dense(0.0, 0.9074074074074074, 0.09259259259259259)),
-			CustomResultRecord("virginica", Vectors.dense(0.0, 0.021739130434782608, 0.9782608695652174))
-		))
-		val expectedCustomResultDs = sparkSession.createDataFrame(expectedCustomResultRdd)
+	protected
+	def loadEvaluator(pmmlPath: String): Evaluator = {
+		val inputStream = getClass.getClassLoader.getResourceAsStream(pmmlPath)
 
-		// Load the PMML
-		val pmmlIs = getClass.getClassLoader.getResourceAsStream("DecisionTreeIris.pmml")
+		try {
+			new LoadingModelEvaluatorBuilder()
+				.load(inputStream)
+				.build()
+		} finally {
+			inputStream.close
+		}
+	}
 
-		// Create the evaluator
-		val evaluator = new LoadingModelEvaluatorBuilder()
-			.load(pmmlIs)
-			.build()
+	protected
+	def loadDataFrame(csvPath: String): DataFrame = {
+		val resource = getClass.getClassLoader.getResource(csvPath)
 
-		// Create the transformer
-		var pmmlTransformer = new TransformerBuilder(evaluator)
-			.withTargetCols
-			.withOutputCols
-			.exploded(true)
-			.build()
-
-		// Verify the transformed results
-		var resultDs = pmmlTransformer.transform(inputDs)
-		resultDs.show
-
-		resultDs = resultDs.select("Species", "Probability_setosa", "Probability_versicolor", "Probability_virginica", "Node_Id")
-
-		assert(resultDs.rdd.collect.toList == expectedDefaultResultDs.rdd.collect.toList)
-
-		pmmlTransformer = new TransformerBuilder(evaluator)
-			.withLabelCol("label")
-			.withProbabilityCol("probability", Arrays.asList("setosa", "versicolor", "virginica"))
-			.exploded(true)
-			.build()
-
-		resultDs = pmmlTransformer.transform(inputDs)
-		resultDs.show
-
-		resultDs = resultDs.select("label", "probability")
-
-		assert(resultDs.rdd.collect.toList == expectedCustomResultDs.rdd.collect.toList)
+		spark.read
+			.option("header", "true")
+			.option("inferSchema", "true")
+			.option("nanValue", "NaN")
+			.csv(resource.getPath)
 	}
 }

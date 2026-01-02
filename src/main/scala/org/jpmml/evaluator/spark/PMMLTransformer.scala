@@ -1,112 +1,152 @@
 /*
- * Copyright (c) 2018 Interset Software Inc
- * All rights reserved.
+ * Copyright (c) 2026 Villu Ruusmann
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
+ * This file is part of JPMML-Evaluator
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- * 3. Neither the name of the copyright holder nor the names of its contributors
- *    may be used to endorse or promote products derived from this software without
- *    specific prior written permission.
+ * JPMML-Evaluator is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
- * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * JPMML-Evaluator is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with JPMML-Evaluator.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package org.jpmml.evaluator.spark
 
 import org.apache.spark.ml.Transformer
-import org.apache.spark.ml.param.ParamMap
-import org.apache.spark.sql.functions._
-import org.apache.spark.sql.types.{DataTypes, StructType}
-import org.apache.spark.sql.{Column, Dataset, Row}
-import org.jpmml.evaluator.{Evaluator, InputField, ResultField}
+import org.apache.spark.ml.param.{Param, ParamMap}
+import org.apache.spark.ml.util.{DefaultParamsWritable, Identifiable}
+import org.apache.spark.sql.{DataFrame, Dataset, Encoders, Row}
+import org.apache.spark.sql.catalyst.encoders.RowEncoder
+import org.apache.spark.sql.types.{BooleanType, DataType, DoubleType, FloatType, IntegerType, StringType, StructType}
+import org.jpmml.evaluator.{Evaluator, OutputField, TargetField}
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
-// Use a Java list for the ColumnProducers to make the constructor API easy to use from Java
-// We'll just convert to Scala where needed internally
-class PMMLTransformer(evaluator: Evaluator, columnProducers: java.util.List[ColumnProducer[_ <: ResultField]]) extends Transformer {
+abstract
+class PMMLTransformer(override val uid: String, val evaluator: Evaluator) extends Transformer with DefaultParamsWritable {
 
-	override val uid: String = "pmml-transformer"
-	def getOutputCol = "pmml"
+	val exceptionCol: Param[String] = new Param[String](this, "exceptionCol", "Exception column name")
 
-	// Initialize the output schema based on the ColumnProducers
-	private val outputSchema: StructType = {
-		columnProducers
-			.asScala
-			.foldLeft(new StructType()){ (schema, cp) =>
-				schema.add(cp.init(evaluator))
+
+	/**
+	 * @group getParam
+	 */
+	def getExceptionCol: String = $(exceptionCol)
+
+	/**
+	 * @group setParam
+	 */
+	def setExceptionCol(value: String): PMMLTransformer = {
+		set(exceptionCol, value)
+		this
+	}
+
+
+	def this(evaluator: Evaluator) = this(Identifiable.randomUID("pmmlTransformer"), evaluator)
+
+	setDefault(
+		exceptionCol -> "exception"
+	)
+
+	override
+	def transformSchema(schema: StructType): StructType
+
+	protected 
+	def buildResultsRow(row: Row, results: java.util.Map[String, _]): Row
+
+	protected
+	def buildExceptionRow(row: Row, exception: Exception): Row
+
+	override
+	def transform(dataset: Dataset[_]): DataFrame = {
+		val df = dataset.toDF()
+		val transformedSchema = transformSchema(df.schema)
+		val columnIndices = buildColumnIndices(df.schema)
+
+		// Spark 3.5.X
+		val encoder = Encoders.row(transformedSchema)
+		// Spark 3.0.X through 3.4.X
+		//val encoder = RowEncoder(transformedSchema)
+
+		df.mapPartitions(
+			partition => partition.map {
+				row => {
+					val arguments = new LazyRowMap(row, columnIndices)
+
+					try {
+						val results = evaluator.evaluate(arguments)
+
+						buildResultsRow(row, results)
+					} catch {
+						case e: Exception => {
+							buildExceptionRow(row, e)
+						}
+					}
+				}
 			}
+		)(encoder)
 	}
 
-	override def transformSchema(schema: StructType): StructType = {
-		schema.add(
-			DataTypes.createStructField(getOutputCol, outputSchema, false)
-		)
+	override
+	def copy(extra: ParamMap): PMMLTransformer = {
+		defaultCopy(extra)
 	}
 
-	// Transformer method that evaluates the PMML against each row
-	override def transform(ds: Dataset[_]): Dataset[Row] = {
-		// Helper evaluation function, takes in a row and returns a row
-		def evaluationFunction: (Row) => Row = {
-			row => {
-				val input = evaluator.getInputFields.asScala
+	private[spark]
+	def getTargetFields: Seq[TargetField] = {
+		evaluator.getTargetFields.asScala.toSeq
+	}
 
-				val arguments = input.zipWithIndex.map { case (inputField, index) =>
-					// The row here is pruned to just be the input fields, so this lines up correctly
-					val inputField = input(index)
-					val rowElement = row(index)
+	private[spark]
+	def getOutputFields: Seq[OutputField] = {
+		evaluator.getOutputFields.asScala.toSeq
+	}
 
-					(inputField.getName, inputField.prepare(rowElement))
-				}
+	protected
+	def toSparkDataType(pmmlDataType: org.dmg.pmml.DataType): DataType = {
+		pmmlDataType match {
+			case org.dmg.pmml.DataType.STRING => StringType
+			case org.dmg.pmml.DataType.INTEGER => IntegerType
+			case org.dmg.pmml.DataType.FLOAT => FloatType
+			case org.dmg.pmml.DataType.DOUBLE => DoubleType
+			case org.dmg.pmml.DataType.BOOLEAN => BooleanType
+			case _ => throw new IllegalArgumentException("PMML data type " + pmmlDataType.value() + " is not supported")
+		}
+	}
 
-				// Evaluate the arguments
-				val resultMap = evaluator.evaluate(arguments.toMap.asJava).asScala
+	private 
+	def buildColumnIndices(schema: StructType): Map[String, Int] = {
+		schema.fieldNames.zipWithIndex.toMap
+	}
+}
 
-				// Format the values from the map
-				val formattedValues = columnProducers.asScala.map{ cp =>
-					cp.format( resultMap(cp.getField.getName) )
-				}
+class LazyRowMap (
+	private val row: Row,
+	private val columnIndices: Map[String, Int]
+) extends java.util.AbstractMap[String, Object] {
 
-				// Create a Row from the formatted values
-				Row.fromSeq(formattedValues)
+	override
+	def get(key: Object): Object = {
+		val columnName = key.asInstanceOf[String]
+
+		columnIndices.get(columnName) match {
+			case Some(index) => {
+				row.get(index).asInstanceOf[Object]
+			}
+			case None => {
+				null
 			}
 		}
-
-		// Map input fields to Dataset Columns, and escape special characters
-		val columns: Seq[Column] = evaluator.getInputFields.asScala.map { inputField: InputField =>
-			ds(
-				DatasetUtil.escapeColumnName(inputField.getName)
-			)
-		}
-
-		// Create a UDF to perform the evaluation
-		import org.apache.spark.sql.functions._
-		val udfFn = udf(evaluationFunction, outputSchema)
-
-		// Wrap the columns in a struct() so the function executes on a Row
-		val udfCol = udfFn(struct(columns:_*))
-
-		// Execute the PMML by including the evaluation as a new column (getOutputCol)
-		ds.withColumn(
-			colName = DatasetUtil.escapeColumnName(getOutputCol),
-			col = udfCol
-		)
 	}
 
-	override def copy(extra: ParamMap): Transformer = throw new UnsupportedOperationException
+	override
+	def entrySet(): java.util.Set[java.util.Map.Entry[String, Object]] = {
+		throw new UnsupportedOperationException()
+	}
 }
