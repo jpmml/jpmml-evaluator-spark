@@ -21,8 +21,7 @@ package org.jpmml.evaluator.spark
 import org.apache.spark.ml.Transformer
 import org.apache.spark.ml.param.{Param, ParamMap}
 import org.apache.spark.ml.util.{DefaultParamsWritable, Identifiable}
-import org.apache.spark.sql.{DataFrame, Dataset, Encoders, Row}
-import org.apache.spark.sql.catalyst.encoders.RowEncoder
+import org.apache.spark.sql.{DataFrame, Dataset, Row}
 import org.apache.spark.sql.types.{BooleanType, DataType, DoubleType, FloatType, IntegerType, StringType, StructType}
 import org.jpmml.evaluator.{Evaluator, OutputField, TargetField}
 
@@ -69,12 +68,7 @@ class PMMLTransformer(override val uid: String, val evaluator: Evaluator) extend
 		val transformedSchema = transformSchema(df.schema)
 		val columnIndices = buildColumnIndices(df.schema)
 
-		// Spark 3.5.X
-		val encoder = Encoders.row(transformedSchema)
-		// Spark 3.0.X through 3.4.X
-		//val encoder = RowEncoder(transformedSchema)
-
-		df.mapPartitions(
+		val resultRdd = df.rdd.mapPartitions(
 			partition => partition.map {
 				row => {
 					val arguments = new LazyRowMap(row, columnIndices)
@@ -90,7 +84,9 @@ class PMMLTransformer(override val uid: String, val evaluator: Evaluator) extend
 					}
 				}
 			}
-		)(encoder)
+		)
+
+		df.sparkSession.createDataFrame(resultRdd, transformedSchema)
 	}
 
 	override
