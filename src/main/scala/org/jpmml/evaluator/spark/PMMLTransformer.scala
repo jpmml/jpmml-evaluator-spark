@@ -22,7 +22,7 @@ import org.apache.spark.ml.Transformer
 import org.apache.spark.ml.param.{Param, ParamMap}
 import org.apache.spark.ml.util.{DefaultParamsWritable, Identifiable}
 import org.apache.spark.sql.{DataFrame, Dataset, Row}
-import org.apache.spark.sql.types.{BooleanType, DataType, DoubleType, FloatType, IntegerType, StringType, StructType}
+import org.apache.spark.sql.types.{BooleanType, DataType, DoubleType, FloatType, IntegerType, StringType, StructField, StructType}
 import org.jpmml.evaluator.{Evaluator, OutputField, TargetField}
 
 import scala.jdk.CollectionConverters._
@@ -54,13 +54,30 @@ class PMMLTransformer(override val uid: String, val evaluator: Evaluator) extend
 	)
 
 	override
-	def transformSchema(schema: StructType): StructType
-
-	protected 
-	def buildResultsRow(row: Row, results: java.util.Map[String, _]): Row
+	def transformSchema(schema: StructType): StructType = {
+		StructType(schema.fields ++ pmmlTransformerFields)
+	}
 
 	protected
-	def buildExceptionRow(row: Row, exception: Exception): Row
+	def pmmlTransformerFields(): Seq[StructField]
+
+	protected
+	def pmmlFields(): Seq[StructField] = {
+		val targetFields: Seq[StructField] = getTargetFields.map {
+			targetField => StructField(targetField.getName, toSparkDataType(targetField.getDataType), true)
+		}
+
+		val outputFields: Seq[StructField] = getOutputFields.map {
+			outputField => StructField(outputField.getName, toSparkDataType(outputField.getDataType), true)
+		}
+
+		targetFields ++ outputFields
+	}
+
+	protected
+	def exceptionField(): StructField = {
+		StructField(getExceptionCol, StringType, true)
+	}
 
 	override
 	def transform(dataset: Dataset[_]): DataFrame = {
@@ -88,6 +105,12 @@ class PMMLTransformer(override val uid: String, val evaluator: Evaluator) extend
 
 		df.sparkSession.createDataFrame(resultRdd, transformedSchema)
 	}
+
+	protected 
+	def buildResultsRow(row: Row, results: java.util.Map[String, _]): Row
+
+	protected
+	def buildExceptionRow(row: Row, exception: Exception): Row
 
 	override
 	def copy(extra: ParamMap): PMMLTransformer = {

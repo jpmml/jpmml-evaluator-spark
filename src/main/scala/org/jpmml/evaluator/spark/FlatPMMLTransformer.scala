@@ -20,7 +20,7 @@ package org.jpmml.evaluator.spark
 
 import org.apache.spark.ml.util.Identifiable
 import org.apache.spark.sql.Row
-import org.apache.spark.sql.types.{StructField, StructType, StringType}
+import org.apache.spark.sql.types.StructField
 import org.jpmml.evaluator.{Evaluator, EvaluatorUtil}
 
 class FlatPMMLTransformer(override val uid: String, override val evaluator: Evaluator) extends PMMLTransformer(uid, evaluator) {
@@ -28,20 +28,8 @@ class FlatPMMLTransformer(override val uid: String, override val evaluator: Eval
 	def this(evaluator: Evaluator) = this(Identifiable.randomUID("flatPmmlTransformer"), evaluator)
 
 	override
-	def transformSchema(schema: StructType): StructType = {
-		val targetFields: Seq[StructField] = getTargetFields.map {
-			targetField => StructField(targetField.getName, toSparkDataType(targetField.getDataType), true)
-		}
-
-		val outputFields: Seq[StructField] = getOutputFields.map {
-			outputField => StructField(outputField.getName, toSparkDataType(outputField.getDataType), true)
-		}
-
-		val exceptionField = StructField(getExceptionCol, StringType, true)
-
-		val rowFields = schema.fields ++ targetFields ++ outputFields :+ exceptionField
-
-		StructType(rowFields.toArray)
+	def pmmlTransformerFields(): Seq[StructField] = {
+		pmmlFields :+ exceptionField
 	}
 
 	override
