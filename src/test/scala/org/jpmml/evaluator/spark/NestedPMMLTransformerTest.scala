@@ -48,6 +48,8 @@ class NestedPMMLTransformerTest extends PMMLTransformerTest {
 	}
 
 	def checkDecisionTreeIris(pmmlTransformer: NestedPMMLTransformer, df: DataFrame, successCount: Int, failureCount: Int): Unit = {
+		checkPersistence(pmmlTransformer)
+
 		val schema = df.schema
 		val pmmlSchema = pmmlTransformer.transformSchema(schema)
 

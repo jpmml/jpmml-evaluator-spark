@@ -18,17 +18,24 @@
  */
 package org.jpmml.evaluator.spark
 
+import java.io.{ObjectInputStream, ObjectOutputStream}
+
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.scala.DefaultScalaModule
+import org.apache.hadoop.fs.Path
 import org.apache.spark.ml.Transformer
 import org.apache.spark.ml.param.{Param, ParamMap}
-import org.apache.spark.ml.util.{DefaultParamsWritable, Identifiable}
+import org.apache.spark.ml.util.{Identifiable, MLReader, MLWritable, MLWriter}
 import org.apache.spark.sql.{DataFrame, Dataset, Row}
+import org.apache.spark.ml.param.ParamPair
 import org.apache.spark.sql.types.{BooleanType, DataType, DoubleType, FloatType, IntegerType, StringType, StructField, StructType}
 import org.jpmml.evaluator.{Evaluator, EvaluatorUtil, OutputField, TargetField}
 
+import scala.io.Source
 import scala.jdk.CollectionConverters._
 
 abstract
-class PMMLTransformer(override val uid: String, val evaluator: Evaluator) extends Transformer with DefaultParamsWritable {
+class PMMLTransformer(override val uid: String, val evaluator: Evaluator) extends Transformer with MLWritable {
 
 	val exceptionCol: Param[String] = new Param[String](this, "exceptionCol", "Exception column name")
 
@@ -81,7 +88,7 @@ class PMMLTransformer(override val uid: String, val evaluator: Evaluator) extend
 
 	override
 	def transform(dataset: Dataset[_]): DataFrame = {
-		val df = dataset.toDF()
+		val df = dataset.toDF
 		val transformedSchema = transformSchema(df.schema)
 		val columnIndices = buildColumnIndices(df.schema)
 
@@ -133,6 +140,11 @@ class PMMLTransformer(override val uid: String, val evaluator: Evaluator) extend
 	}
 
 	override
+	def write: MLWriter = {
+		new PMMLTransformerWriter(this)
+	}
+
+	override
 	def copy(extra: ParamMap): PMMLTransformer = {
 		defaultCopy(extra)
 	}
@@ -155,7 +167,7 @@ class PMMLTransformer(override val uid: String, val evaluator: Evaluator) extend
 			case org.dmg.pmml.DataType.FLOAT => FloatType
 			case org.dmg.pmml.DataType.DOUBLE => DoubleType
 			case org.dmg.pmml.DataType.BOOLEAN => BooleanType
-			case _ => throw new IllegalArgumentException("PMML data type " + pmmlDataType.value() + " is not supported")
+			case _ => throw new IllegalArgumentException("PMML data type " + pmmlDataType.value + " is not supported")
 		}
 	}
 
@@ -186,6 +198,97 @@ class LazyRowMap (
 
 	override
 	def entrySet(): java.util.Set[java.util.Map.Entry[String, Object]] = {
-		throw new UnsupportedOperationException()
+		throw new UnsupportedOperationException
+	}
+}
+
+class PMMLTransformerWriter(instance: PMMLTransformer) extends MLWriter {
+
+	override
+	def saveImpl(path: String): Unit = {
+		val fs = new Path(path).getFileSystem(sc.hadoopConfiguration)
+
+		val metadataPath = new Path(path, "metadata")
+		val evaluatorPath = new Path(path, "evaluator")
+
+		val paramMap = instance.extractParamMap.toSeq.map {
+			case ParamPair(p, v) => p.name -> p.jsonEncode(v)
+		}.toMap
+
+		val metadata: Map[String, Any] = Map(
+			"class" -> instance.getClass.getName,
+			"uid" -> instance.uid,
+			"timestamp" -> System.currentTimeMillis,
+			"sparkVersion" -> sc.version,
+			"paramMap" -> paramMap
+		)
+
+		val mapper = new ObjectMapper
+		mapper.registerModule(DefaultScalaModule)
+		val metadataJson = mapper.writeValueAsString(metadata)
+
+		val metadataOs = fs.create(metadataPath)
+		try {
+			metadataOs.write(metadataJson.getBytes("UTF-8"))
+		} finally {
+			metadataOs.close
+		}
+
+		val evaluatorOs = new ObjectOutputStream(fs.create(evaluatorPath))
+		try {
+			evaluatorOs.writeObject(instance.evaluator)
+		} finally {
+			evaluatorOs.close
+		}
+	}
+}
+
+class PMMLTransformerReader[T <: PMMLTransformer] extends MLReader[T] {
+
+	override
+	def load(path: String): T = {
+		val fs = new Path(path).getFileSystem(sc.hadoopConfiguration)
+
+		val metadataPath = new Path(path, "metadata")
+		val evaluatorPath = new Path(path, "evaluator")
+
+		val metadataJson = {
+			val metadataIs = fs.open(metadataPath)
+			try {
+				Source.fromInputStream(metadataIs)("UTF-8").mkString
+			} finally {
+				metadataIs.close
+			}
+		}
+
+		val mapper = new ObjectMapper()
+		mapper.registerModule(DefaultScalaModule)
+		val metadata = mapper.readValue(metadataJson, classOf[Map[String, Any]])
+
+		val evaluator = {
+			val evaluatorIs = new ObjectInputStream(fs.open(evaluatorPath))
+			try {
+				evaluatorIs.readObject().asInstanceOf[Evaluator]
+			} finally {
+				evaluatorIs.close
+			}
+		}
+
+		val className = metadata("class").asInstanceOf[String]
+		val uid = metadata("uid").asInstanceOf[String]
+		val paramMap = metadata("paramMap").asInstanceOf[Map[String, String]]
+
+		val clazz = Class.forName(className)
+		val instance = clazz.getConstructor(classOf[String], classOf[Evaluator]).newInstance(uid, evaluator).asInstanceOf[PMMLTransformer]
+
+		paramMap.foreach {
+			case (name, jsonValue) => {
+				val param = instance.getParam(name)
+				val value = param.jsonDecode(jsonValue)
+				instance.set(param, value)
+			}
+		}
+
+		instance.asInstanceOf[T]
 	}
 }

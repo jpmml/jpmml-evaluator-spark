@@ -18,6 +18,8 @@
  */
 package org.jpmml.evaluator.spark
 
+import java.nio.file.{Files, Path}
+import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.types.{DataType, StringType, StructField}
 import org.jpmml.evaluator.{Evaluator, LoadingModelEvaluatorBuilder}
@@ -71,6 +73,35 @@ class PMMLTransformerTest extends AnyFunSuite with Matchers with BeforeAndAfterA
 			.option("inferSchema", "true")
 			.option("nanValue", "NaN")
 			.csv(resource.getPath)
+	}
+
+	protected
+	def checkPersistence(pmmlTransformer: PMMLTransformer): Unit = {
+		val emptyDf = spark.emptyDataFrame
+
+		val pipeline = new Pipeline().setStages(Array(pmmlTransformer))
+		val pipelineModel = pipeline.fit(emptyDf)
+
+		val tmpDir = Files.createTempDirectory("pmmlTransformer-")
+
+		pipelineModel.write
+			.overwrite
+			.save(tmpDir.toString)
+
+		val clonedPipelineModel = PipelineModel.load(tmpDir.toString)
+		clonedPipelineModel.stages should have size 1
+
+		val clonedPmmlTransformer = clonedPipelineModel.stages.head.asInstanceOf[PMMLTransformer]
+
+		clonedPmmlTransformer should not be theSameInstanceAs(pmmlTransformer)
+
+		clonedPmmlTransformer.getClass shouldBe pmmlTransformer.getClass
+		clonedPmmlTransformer.uid shouldBe pmmlTransformer.uid
+
+		clonedPmmlTransformer.extractParamMap.size shouldBe pmmlTransformer.extractParamMap.size
+		clonedPmmlTransformer.params.map(_.name).sorted shouldBe pmmlTransformer.params.map(_.name).sorted
+
+		clonedPmmlTransformer.evaluator should not be null
 	}
 
 	protected

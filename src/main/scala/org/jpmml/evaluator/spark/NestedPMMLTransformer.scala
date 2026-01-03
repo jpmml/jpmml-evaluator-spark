@@ -19,7 +19,7 @@
 package org.jpmml.evaluator.spark
 
 import org.apache.spark.ml.param.{Param, ParamMap}
-import org.apache.spark.ml.util.Identifiable
+import org.apache.spark.ml.util.{Identifiable, MLReadable, MLReader}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.{StructField, StructType, StringType}
 import org.jpmml.evaluator.{Evaluator, EvaluatorUtil}
@@ -41,6 +41,7 @@ class NestedPMMLTransformer(override val uid: String, override val evaluator: Ev
 		set(resultsCol, value)
 		this
 	}
+
 
 	def this(evaluator: Evaluator) = this(Identifiable.randomUID("nestedPmmlTransformer"), evaluator)
 
@@ -66,8 +67,21 @@ class NestedPMMLTransformer(override val uid: String, override val evaluator: Ev
 
 	override
 	protected def buildExceptionRow(row: Row, exception: Exception): Row = {
-		val exceptionValue: String = exception.getClass.getName() + ": " + exception.getMessage
+		val exceptionValue: String = exception.getClass.getName + ": " + exception.getMessage
 
 		Row.fromSeq(row.toSeq :+ null :+ exceptionValue)
+	}
+}
+
+object NestedPMMLTransformer extends MLReadable[NestedPMMLTransformer] {
+
+	override
+	def read(): MLReader[NestedPMMLTransformer] = {
+		new PMMLTransformerReader[NestedPMMLTransformer]
+	}
+
+	override
+	def load(path: String): NestedPMMLTransformer = {
+		super.load(path)
 	}
 }

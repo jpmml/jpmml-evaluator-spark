@@ -18,7 +18,7 @@
  */
 package org.jpmml.evaluator.spark
 
-import org.apache.spark.ml.util.Identifiable
+import org.apache.spark.ml.util.{Identifiable, MLReadable, MLReader}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.StructField
 import org.jpmml.evaluator.Evaluator
@@ -41,8 +41,21 @@ class FlatPMMLTransformer(override val uid: String, override val evaluator: Eval
 
 	override
 	protected def buildExceptionRow(row: Row, exception: Exception): Row = {
-		val exceptionValue: String = exception.getClass.getName() + ": " + exception.getMessage
+		val exceptionValue: String = exception.getClass.getName + ": " + exception.getMessage
 
 		Row.fromSeq(row.toSeq ++ pmmlValues(null) :+ exceptionValue)
+	}
+}
+
+object FlatPMMLTransformer extends MLReadable[FlatPMMLTransformer] {
+
+	override
+	def read(): MLReader[FlatPMMLTransformer] = {
+		new PMMLTransformerReader[FlatPMMLTransformer]
+	}
+
+	override
+	def load(path: String): FlatPMMLTransformer = {
+		super.load(path)
 	}
 }
