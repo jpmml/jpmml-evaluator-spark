@@ -23,7 +23,7 @@ import org.apache.spark.ml.param.{Param, ParamMap}
 import org.apache.spark.ml.util.{DefaultParamsWritable, Identifiable}
 import org.apache.spark.sql.{DataFrame, Dataset, Row}
 import org.apache.spark.sql.types.{BooleanType, DataType, DoubleType, FloatType, IntegerType, StringType, StructField, StructType}
-import org.jpmml.evaluator.{Evaluator, OutputField, TargetField}
+import org.jpmml.evaluator.{Evaluator, EvaluatorUtil, OutputField, TargetField}
 
 import scala.jdk.CollectionConverters._
 
@@ -111,6 +111,26 @@ class PMMLTransformer(override val uid: String, val evaluator: Evaluator) extend
 
 	protected
 	def buildExceptionRow(row: Row, exception: Exception): Row
+
+	protected
+	def pmmlValues(results: java.util.Map[String, _]): Seq[Any] = {
+
+		if(results != null){
+			val targetValues: Seq[Any] = getTargetFields.map {
+				targetField => EvaluatorUtil.decode(results.get(targetField.getName))
+			}
+
+			val outputValues: Seq[Any] = getOutputFields.map {
+				outputField => results.get(outputField.getName)
+			}
+
+			targetValues ++ outputValues
+		} else
+
+		{
+			Seq.fill(getTargetFields.size + getOutputFields.size)(null)
+		}
+	}
 
 	override
 	def copy(extra: ParamMap): PMMLTransformer = {

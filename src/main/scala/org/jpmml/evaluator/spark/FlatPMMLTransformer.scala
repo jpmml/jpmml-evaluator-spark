@@ -21,7 +21,7 @@ package org.jpmml.evaluator.spark
 import org.apache.spark.ml.util.Identifiable
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.StructField
-import org.jpmml.evaluator.{Evaluator, EvaluatorUtil}
+import org.jpmml.evaluator.Evaluator
 
 class FlatPMMLTransformer(override val uid: String, override val evaluator: Evaluator) extends PMMLTransformer(uid, evaluator) {
 
@@ -34,31 +34,15 @@ class FlatPMMLTransformer(override val uid: String, override val evaluator: Eval
 
 	override
 	protected def buildResultsRow(row: Row, results: java.util.Map[String, _]): Row = {
-		val targetValues: Seq[Any] = getTargetFields.map {
-			targetField => EvaluatorUtil.decode(results.get(targetField.getName))
-		}
-
-		val outputValues: Seq[Any] = getOutputFields.map {
-			outputField => results.get(outputField.getName)
-		}
-
 		val exceptionValue: String = null
 
-		val rowValues: Seq[Any] = row.toSeq ++ targetValues ++ outputValues :+ exceptionValue
-
-		Row.fromSeq(rowValues)
+		Row.fromSeq(row.toSeq ++ pmmlValues(results) :+ exceptionValue)
 	}
 
 	override
 	protected def buildExceptionRow(row: Row, exception: Exception): Row = {
-		val targetValues: Seq[Any] = Seq.fill(getTargetFields.size)(null)
-
-		val outputValues: Seq[Any] = Seq.fill(getOutputFields.size)(null)
-
 		val exceptionValue: String = exception.getClass.getName() + ": " + exception.getMessage
 
-		val rowValues: Seq[Any] = row.toSeq ++ targetValues ++ outputValues :+ exceptionValue
-
-		Row.fromSeq(rowValues)
+		Row.fromSeq(row.toSeq ++ pmmlValues(null) :+ exceptionValue)
 	}
 }
