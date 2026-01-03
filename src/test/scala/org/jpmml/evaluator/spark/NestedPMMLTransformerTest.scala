@@ -34,15 +34,8 @@ class NestedPMMLTransformerTest extends PMMLTransformerTest {
 		val pmmlTransformer = createPmmlTransformer(evaluator)
 
 		val df = loadDataFrame("Iris.csv")
-		val pmmlDf = pmmlTransformer.transform(df)
 
-		checkDecisionTreeIris(pmmlTransformer, df, pmmlDf)
-
-		pmmlDf.filter(pmmlDf(pmmlTransformer.getResultsCol).isNotNull).count() shouldBe 150
-		pmmlDf.filter(pmmlDf(pmmlTransformer.getResultsCol).isNull).count() shouldBe 0
-
-		pmmlDf.filter(pmmlDf(pmmlTransformer.getExceptionCol).isNotNull).count() shouldBe 0
-		pmmlDf.filter(pmmlDf(pmmlTransformer.getExceptionCol).isNull).count() shouldBe 150
+		checkDecisionTreeIris(pmmlTransformer, df, 150, 0)
 	}
 
 	test("DecisionTreeIris with IrisInvalid"){
@@ -50,22 +43,32 @@ class NestedPMMLTransformerTest extends PMMLTransformerTest {
 		val pmmlTransformer = createPmmlTransformer(evaluator)
 
 		val df = loadDataFrame("IrisInvalid.csv")
-		val pmmlDf = pmmlTransformer.transform(df)
 
-		checkDecisionTreeIris(pmmlTransformer, df, pmmlDf)
-
-		pmmlDf.filter(pmmlDf(pmmlTransformer.getResultsCol).isNotNull).count() shouldBe 147
-		pmmlDf.filter(pmmlDf(pmmlTransformer.getResultsCol).isNull).count() shouldBe 3
-
-		pmmlDf.filter(pmmlDf(pmmlTransformer.getExceptionCol).isNotNull).count() shouldBe 3
-		pmmlDf.filter(pmmlDf(pmmlTransformer.getExceptionCol).isNull).count() shouldBe 147
+		checkDecisionTreeIris(pmmlTransformer, df, 147, 3)
 	}
 
-	def checkDecisionTreeIris(pmmlTransformer: NestedPMMLTransformer, df: DataFrame, pmmlDf: DataFrame): Unit = {
+	def checkDecisionTreeIris(pmmlTransformer: NestedPMMLTransformer, df: DataFrame, successCount: Int, failureCount: Int): Unit = {
+		val schema = df.schema
+		val pmmlSchema = pmmlTransformer.transformSchema(schema)
+
+		checkDecisionTreeIris(pmmlTransformer, schema, pmmlSchema)
+
+		val pmmlDf = pmmlTransformer.transform(df)
+
 		pmmlDf.count() shouldBe df.count()
 
-		val columns = df.schema.fieldNames
-		val pmmlColumns = pmmlDf.schema.fieldNames
+		checkDecisionTreeIris(pmmlTransformer, df.schema, pmmlDf.schema)
+
+		pmmlDf.filter(pmmlDf(pmmlTransformer.getResultsCol).isNotNull).count() shouldBe successCount
+		pmmlDf.filter(pmmlDf(pmmlTransformer.getResultsCol).isNull).count() shouldBe failureCount
+
+		pmmlDf.filter(pmmlDf(pmmlTransformer.getExceptionCol).isNotNull).count() shouldBe failureCount
+		pmmlDf.filter(pmmlDf(pmmlTransformer.getExceptionCol).isNull).count() shouldBe successCount
+	}
+
+	def checkDecisionTreeIris(pmmlTransformer: NestedPMMLTransformer, schema: StructType, pmmlSchema: StructType): Unit = {
+		val columns = schema.fieldNames
+		val pmmlColumns = pmmlSchema.fieldNames
 
 		pmmlColumns.size shouldBe (columns.size + 1 + 1)
 
@@ -75,26 +78,19 @@ class NestedPMMLTransformerTest extends PMMLTransformerTest {
 
 		pmmlColumns should contain(pmmlTransformer.getResultsCol)
 
-		val resultsType = pmmlDf.schema(pmmlTransformer.getResultsCol).dataType.asInstanceOf[StructType]
-		val resultsColumns = resultsType.fieldNames
-
-		resultsColumns.size shouldBe (1 + 3)
+		val resultsType = pmmlSchema(pmmlTransformer.getResultsCol).dataType.asInstanceOf[StructType]
+		resultsType.fieldNames.size shouldBe (1 + 3)
 
 		pmmlTransformer.getTargetFields.foreach {
-			targetField => {
-				resultsColumns should contain(targetField.getName)
-				resultsType(targetField.getName).dataType shouldBe StringType
-			}
+			targetField => checkPmmlField(resultsType(targetField.getName), StringType)
 		}
 
 		pmmlTransformer.getOutputFields.foreach {
-			outputField => {
-				resultsColumns should contain(outputField.getName)
-				resultsType(outputField.getName).dataType shouldBe DoubleType
-			}
+			outputField => checkPmmlField(resultsType(outputField.getName), DoubleType)
 		}
 
 		pmmlColumns should contain(pmmlTransformer.getExceptionCol)
-		pmmlDf.schema(pmmlTransformer.getExceptionCol).dataType shouldBe StringType
+
+		checkExceptionField(pmmlSchema(pmmlTransformer.getExceptionCol))
 	}
 }

@@ -19,7 +19,7 @@
 package org.jpmml.evaluator.spark
 
 import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.types.{DoubleType, StringType}
+import org.apache.spark.sql.types.{DoubleType, StringType, StructType}
 import org.jpmml.evaluator.Evaluator
 
 class FlatPMMLTransformerTest extends PMMLTransformerTest {
@@ -34,15 +34,8 @@ class FlatPMMLTransformerTest extends PMMLTransformerTest {
 		val pmmlTransformer = createPmmlTransformer(evaluator)
 
 		val df = loadDataFrame("Iris.csv")
-		val pmmlDf = pmmlTransformer.transform(df)
 
-		checkDecisionTreeIris(pmmlTransformer, df, pmmlDf)
-
-		pmmlDf.filter(pmmlDf("Species").isNotNull).count() shouldBe 150
-		pmmlDf.filter(pmmlDf("Species").isNull).count() shouldBe 0
-
-		pmmlDf.filter(pmmlDf(pmmlTransformer.getExceptionCol).isNotNull).count() shouldBe 0
-		pmmlDf.filter(pmmlDf(pmmlTransformer.getExceptionCol).isNull).count() shouldBe 150
+		checkDecisionTreeIris(pmmlTransformer, df, 150, 0)
 	}
 
 	test("DecisionTreeIris with IrisInvalid"){
@@ -50,22 +43,32 @@ class FlatPMMLTransformerTest extends PMMLTransformerTest {
 		val pmmlTransformer = createPmmlTransformer(evaluator)
 
 		val df = loadDataFrame("IrisInvalid.csv")
-		val pmmlDf = pmmlTransformer.transform(df)
 
-		checkDecisionTreeIris(pmmlTransformer, df, pmmlDf)
-
-		pmmlDf.filter(pmmlDf("Species").isNotNull).count() shouldBe 147
-		pmmlDf.filter(pmmlDf("Species").isNull).count() shouldBe 3
-
-		pmmlDf.filter(pmmlDf(pmmlTransformer.getExceptionCol).isNotNull).count() shouldBe 3
-		pmmlDf.filter(pmmlDf(pmmlTransformer.getExceptionCol).isNull).count() shouldBe 147
+		checkDecisionTreeIris(pmmlTransformer, df, 147, 3)
 	}
 
-	def checkDecisionTreeIris(pmmlTransformer: FlatPMMLTransformer, df: DataFrame, pmmlDf: DataFrame): Unit = {
+	def checkDecisionTreeIris(pmmlTransformer: FlatPMMLTransformer, df: DataFrame, successCount: Int, failureCount: Int): Unit = {
+		val schema = df.schema
+		val pmmlSchema = pmmlTransformer.transformSchema(schema)
+
+		checkDecisionTreeIris(pmmlTransformer, schema, pmmlSchema)
+
+		val pmmlDf = pmmlTransformer.transform(df)
+
 		pmmlDf.count() shouldBe df.count()
 
-		val columns = df.schema.fieldNames
-		val pmmlColumns = pmmlDf.schema.fieldNames
+		checkDecisionTreeIris(pmmlTransformer, df.schema, pmmlDf.schema)
+
+		pmmlDf.filter(pmmlDf("Species").isNotNull).count() shouldBe successCount
+		pmmlDf.filter(pmmlDf("Species").isNull).count() shouldBe failureCount
+
+		pmmlDf.filter(pmmlDf(pmmlTransformer.getExceptionCol).isNotNull).count() shouldBe failureCount
+		pmmlDf.filter(pmmlDf(pmmlTransformer.getExceptionCol).isNull).count() shouldBe successCount
+	}
+
+	def checkDecisionTreeIris(pmmlTransformer: FlatPMMLTransformer, schema: StructType, pmmlSchema: StructType): Unit = {
+		val columns = schema.fieldNames
+		val pmmlColumns = pmmlSchema.fieldNames
 
 		pmmlColumns.size shouldBe (columns.size + 1 + 3 + 1)
 
@@ -76,18 +79,21 @@ class FlatPMMLTransformerTest extends PMMLTransformerTest {
 		pmmlTransformer.getTargetFields.foreach {
 			targetField => {
 				pmmlColumns should contain(targetField.getName)
-				pmmlDf.schema(targetField.getName).dataType shouldBe StringType
+
+				checkPmmlField(pmmlSchema(targetField.getName), StringType)
 			}
 		}
 
 		pmmlTransformer.getOutputFields.foreach {
 			outputField => {
 				pmmlColumns should contain(outputField.getName)
-				pmmlDf.schema(outputField.getName).dataType shouldBe DoubleType
+
+				checkPmmlField(pmmlSchema(outputField.getName), DoubleType)
 			}
 		}
 
 		pmmlColumns should contain(pmmlTransformer.getExceptionCol)
-		pmmlDf.schema(pmmlTransformer.getExceptionCol).dataType shouldBe StringType
+
+		checkExceptionField(pmmlSchema(pmmlTransformer.getExceptionCol))
 	}
 }

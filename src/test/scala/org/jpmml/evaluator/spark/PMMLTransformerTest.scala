@@ -19,6 +19,7 @@
 package org.jpmml.evaluator.spark
 
 import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.types.{DataType, StringType, StructField}
 import org.jpmml.evaluator.{Evaluator, LoadingModelEvaluatorBuilder}
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.funsuite.AnyFunSuite
@@ -70,5 +71,17 @@ class PMMLTransformerTest extends AnyFunSuite with Matchers with BeforeAndAfterA
 			.option("inferSchema", "true")
 			.option("nanValue", "NaN")
 			.csv(resource.getPath)
+	}
+
+	protected
+	def checkPmmlField(pmmlField: StructField, dataType: DataType): Unit = {
+		pmmlField.dataType shouldBe dataType
+		pmmlField.nullable shouldBe true
+	}
+
+	protected
+	def checkExceptionField(exceptionField: StructField): Unit = {
+		exceptionField.dataType shouldBe StringType
+		exceptionField.nullable shouldBe true
 	}
 }
