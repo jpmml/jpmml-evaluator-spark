@@ -22,6 +22,7 @@ import java.nio.file.{Files, Path}
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.types.{DataType, StringType, StructField}
+import org.dmg.pmml.PMML
 import org.jpmml.evaluator.{Evaluator, LoadingModelEvaluatorBuilder}
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.funsuite.AnyFunSuite
@@ -63,6 +64,32 @@ class PMMLTransformerTest extends AnyFunSuite with Matchers with BeforeAndAfterA
 			pmmlIs.close
 		}
 	}
+
+	protected
+	def loadTargetlessEvaluator(pmmlPath: String, targetName: String): Evaluator = {
+		val pmmlIs = getClass.getClassLoader.getResourceAsStream(pmmlPath)
+
+		try {
+			val transformer: org.jpmml.evaluator.PMMLTransformer[_ <: Exception] = (pmml: PMML) => {
+				pmml.getDataDictionary.getDataFields
+					.removeIf(dataField => dataField.getName == targetName)
+
+				val model = pmml.getModels.get(0)
+				model.getMiningSchema.getMiningFields
+					.removeIf(miningField => miningField.getName == targetName)
+
+				pmml
+			}
+
+			new LoadingModelEvaluatorBuilder()
+				.setVisitors(null) // XXX
+				.load(pmmlIs)
+				.transform(transformer)
+				.build
+		} finally {
+			pmmlIs.close
+ 		}
+ 	}
 
 	protected
 	def loadDataFrame(csvPath: String): DataFrame = {

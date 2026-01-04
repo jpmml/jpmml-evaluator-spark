@@ -35,7 +35,16 @@ class FlatPMMLTransformerTest extends PMMLTransformerTest {
 
 		val df = loadDataFrame("Iris.csv")
 
-		checkDecisionTreeIris(pmmlTransformer, df, 150, 0)
+		checkDecisionTreeIris(pmmlTransformer, df, "Species", 150, 0)
+	}
+
+	test("Targetless DecisionTreeIris with Iris"){
+		val evaluator = loadTargetlessEvaluator("DecisionTreeIris.pmml", "Species")
+		val pmmlTransformer = createPmmlTransformer(evaluator)
+
+		val df = loadDataFrame("Iris.csv")
+
+		checkDecisionTreeIris(pmmlTransformer, df, pmmlTransformer.getSyntheticTargetName, 150, 0)
 	}
 
 	test("DecisionTreeIris with IrisInvalid"){
@@ -44,10 +53,10 @@ class FlatPMMLTransformerTest extends PMMLTransformerTest {
 
 		val df = loadDataFrame("IrisInvalid.csv")
 
-		checkDecisionTreeIris(pmmlTransformer, df, 147, 3)
+		checkDecisionTreeIris(pmmlTransformer, df, "Species", 147, 3)
 	}
 
-	def checkDecisionTreeIris(pmmlTransformer: FlatPMMLTransformer, df: DataFrame, successCount: Int, failureCount: Int): Unit = {
+	def checkDecisionTreeIris(pmmlTransformer: FlatPMMLTransformer, df: DataFrame, targetName: String, successCount: Int, failureCount: Int): Unit = {
 		checkPersistence(pmmlTransformer)
 
 		val schema = df.schema
@@ -61,8 +70,8 @@ class FlatPMMLTransformerTest extends PMMLTransformerTest {
 
 		checkDecisionTreeIris(pmmlTransformer, df.schema, pmmlDf.schema)
 
-		pmmlDf.filter(pmmlDf("Species").isNotNull).count shouldBe successCount
-		pmmlDf.filter(pmmlDf("Species").isNull).count shouldBe failureCount
+		pmmlDf.filter(pmmlDf(targetName).isNotNull).count shouldBe successCount
+		pmmlDf.filter(pmmlDf(targetName).isNull).count shouldBe failureCount
 
 		pmmlDf.filter(pmmlDf(pmmlTransformer.getExceptionCol).isNotNull).count shouldBe failureCount
 		pmmlDf.filter(pmmlDf(pmmlTransformer.getExceptionCol).isNull).count shouldBe successCount
@@ -83,22 +92,23 @@ class FlatPMMLTransformerTest extends PMMLTransformerTest {
 
 		pmmlTransformer.getTargetFields.foreach {
 			targetField => {
-				pmmlColumns should contain(targetField.getName)
+				val targetName = if(targetField.isSynthetic) pmmlTransformer.getSyntheticTargetName else targetField.getName
 
-				checkPmmlField(pmmlSchema(targetField.getName), StringType)
+				pmmlColumns should contain(targetName)
+				checkPmmlField(pmmlSchema(targetName), StringType)
 			}
 		}
 
 		pmmlTransformer.getOutputFields.foreach {
 			outputField => {
-				pmmlColumns should contain(outputField.getName)
+				val outputName = outputField.getName
 
-				checkPmmlField(pmmlSchema(outputField.getName), DoubleType)
+				pmmlColumns should contain(outputName)
+				checkPmmlField(pmmlSchema(outputName), DoubleType)
 			}
 		}
 
 		pmmlColumns should contain(pmmlTransformer.getExceptionCol)
-
 		checkExceptionField(pmmlSchema(pmmlTransformer.getExceptionCol))
 	}
 }

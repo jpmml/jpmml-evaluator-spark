@@ -45,6 +45,11 @@ class PMMLTransformer(override val uid: String, val evaluator: Evaluator) extend
 	/**
 	 * @group param
 	 */
+	val syntheticTargetName: Param[String] = new Param[String](this, "syntheticTargetName", "Name for a synthetic target field")
+
+	/**
+	 * @group param
+	 */
 	val outputs: BooleanParam = new BooleanParam(this, "outputs", "Produce columns for PMML output fields")
 
 	/**
@@ -62,6 +67,16 @@ class PMMLTransformer(override val uid: String, val evaluator: Evaluator) extend
 	 * @group setParam
 	 */
 	def setTargets(value: Boolean): this.type = set(targets, value)
+
+	/**
+	 * @group getParam
+	 */
+	def getSyntheticTargetName: String = $(syntheticTargetName)
+
+	/**
+	 * @group setParam
+	 */
+	def setSyntheticTargetName(value: String): this.type = set(syntheticTargetName, value)
 
 	/**
 	 * @group getParam
@@ -88,6 +103,7 @@ class PMMLTransformer(override val uid: String, val evaluator: Evaluator) extend
 
 	setDefault(
 		targets -> true,
+		syntheticTargetName -> "_target",
 		outputs -> true,
 		exceptionCol -> "exception"
 	)
@@ -103,7 +119,7 @@ class PMMLTransformer(override val uid: String, val evaluator: Evaluator) extend
 	protected
 	def pmmlFields(): Seq[StructField] = {
 		val targetFields: Seq[StructField] = getTargetFields.map {
-			targetField => StructField(targetField.getName, toSparkDataType(targetField.getDataType), true)
+			targetField => StructField(if(targetField.isSynthetic) getSyntheticTargetName else targetField.getName, toSparkDataType(targetField.getDataType), true)
 		}
 
 		val outputFields: Seq[StructField] = getOutputFields.map {

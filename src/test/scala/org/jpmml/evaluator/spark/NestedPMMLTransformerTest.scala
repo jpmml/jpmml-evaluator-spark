@@ -19,7 +19,7 @@
 package org.jpmml.evaluator.spark
 
 import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.types.{DoubleType, StringType, StructType}
+import org.apache.spark.sql.types.{DoubleType, StringType, StructField, StructType}
 import org.jpmml.evaluator.Evaluator
 
 class NestedPMMLTransformerTest extends PMMLTransformerTest {
@@ -79,6 +79,7 @@ class NestedPMMLTransformerTest extends PMMLTransformerTest {
 		}
 
 		pmmlColumns should contain(pmmlTransformer.getResultsCol)
+		checkResultsField(pmmlSchema(pmmlTransformer.getResultsCol))
 
 		val targetsCount = if(pmmlTransformer.getTargets) 1 else 0
 		val outputsCount = if(pmmlTransformer.getOutputs) 3 else 0
@@ -87,15 +88,28 @@ class NestedPMMLTransformerTest extends PMMLTransformerTest {
 		resultsType.fieldNames.size shouldBe (targetsCount + outputsCount)
 
 		pmmlTransformer.getTargetFields.foreach {
-			targetField => checkPmmlField(resultsType(targetField.getName), StringType)
+			targetField => {
+				val targetName = if(targetField.isSynthetic) pmmlTransformer.getSyntheticTargetName else targetField.getName
+
+				checkPmmlField(resultsType(targetName), StringType)
+			}
 		}
 
 		pmmlTransformer.getOutputFields.foreach {
-			outputField => checkPmmlField(resultsType(outputField.getName), DoubleType)
+			outputField => {
+				val outputName = outputField.getName
+
+				checkPmmlField(resultsType(outputName), DoubleType)
+			}
 		}
 
 		pmmlColumns should contain(pmmlTransformer.getExceptionCol)
-
 		checkExceptionField(pmmlSchema(pmmlTransformer.getExceptionCol))
+	}
+
+	protected
+	def checkResultsField(resultsField: StructField): Unit = {
+		resultsField.dataType shouldBe an [StructType]
+		resultsField.nullable shouldBe true
 	}
 }
