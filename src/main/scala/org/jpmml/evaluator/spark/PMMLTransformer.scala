@@ -45,17 +45,17 @@ class PMMLTransformer(override val uid: String, val evaluator: Evaluator) extend
 	/**
 	 * @group param
 	 */
-	val syntheticTargetName: Param[String] = new Param[String](this, "syntheticTargetName", "Name for a synthetic target field")
-
-	/**
-	 * @group param
-	 */
 	val outputs: BooleanParam = new BooleanParam(this, "outputs", "Produce columns for PMML output fields")
 
 	/**
 	 * @group param
 	 */
 	val exceptionCol: Param[String] = new Param[String](this, "exceptionCol", "Exception column name")
+
+	/**
+	 * @group param
+	 */
+	val syntheticTargetName: Param[String] = new Param[String](this, "syntheticTargetName", "Name for a synthetic target field")
 
 
 	/**
@@ -67,16 +67,6 @@ class PMMLTransformer(override val uid: String, val evaluator: Evaluator) extend
 	 * @group setParam
 	 */
 	def setTargets(value: Boolean): this.type = set(targets, value)
-
-	/**
-	 * @group getParam
-	 */
-	def getSyntheticTargetName: String = $(syntheticTargetName)
-
-	/**
-	 * @group setParam
-	 */
-	def setSyntheticTargetName(value: String): this.type = set(syntheticTargetName, value)
 
 	/**
 	 * @group getParam
@@ -98,14 +88,24 @@ class PMMLTransformer(override val uid: String, val evaluator: Evaluator) extend
 	 */
 	def setExceptionCol(value: String): this.type = set(exceptionCol, value)
 
+	/**
+	 * @group getParam
+	 */
+	def getSyntheticTargetName: String = $(syntheticTargetName)
+
+	/**
+	 * @group setParam
+	 */
+	def setSyntheticTargetName(value: String): this.type = set(syntheticTargetName, value)
+
 
 	def this(evaluator: Evaluator) = this(Identifiable.randomUID("pmmlTransformer"), evaluator)
 
 	setDefault(
 		targets -> true,
-		syntheticTargetName -> "_target",
 		outputs -> true,
-		exceptionCol -> "exception"
+		exceptionCol -> "exception",
+		syntheticTargetName -> "_target"
 	)
 
 	override
