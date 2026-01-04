@@ -72,10 +72,16 @@ class NestedPMMLTransformerTest extends PMMLTransformerTest {
 		val columns = schema.fieldNames
 		val pmmlColumns = pmmlSchema.fieldNames
 
-		pmmlColumns.size shouldBe (columns.size + 1 + 1)
+		columns.size shouldBe 4
 
-		columns.foreach {
-			colName => pmmlColumns should contain(colName)
+		val inputsCount = if(pmmlTransformer.getInputs) 4 else 0
+
+		pmmlColumns.size shouldBe (inputsCount + 1 + 1)
+
+		if(pmmlTransformer.getInputs){
+			columns.foreach {
+				colName => pmmlColumns should contain(colName)
+			}
 		}
 
 		pmmlColumns should contain(pmmlTransformer.getResultsCol)

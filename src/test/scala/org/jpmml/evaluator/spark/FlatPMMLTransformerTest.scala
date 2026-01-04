@@ -81,13 +81,18 @@ class FlatPMMLTransformerTest extends PMMLTransformerTest {
 		val columns = schema.fieldNames
 		val pmmlColumns = pmmlSchema.fieldNames
 
+		columns.size shouldBe 4
+
+		val inputsCount = if(pmmlTransformer.getInputs) 4  else 0
 		val targetsCount = if(pmmlTransformer.getTargets) 1 else 0
 		val outputsCount = if(pmmlTransformer.getOutputs) 3 else 0
 
-		pmmlColumns.size shouldBe (columns.size + (targetsCount + outputsCount) + 1)
+		pmmlColumns.size shouldBe (inputsCount + (targetsCount + outputsCount) + 1)
 
-		columns.foreach {
-			colName => pmmlColumns should contain(colName)
+		if(pmmlTransformer.getInputs){
+			columns.foreach {
+				colName => pmmlColumns should contain(colName)
+			}
 		}
 
 		pmmlTransformer.getTargetFields.foreach {

@@ -38,6 +38,11 @@ abstract
 class PMMLTransformer(override val uid: String, val evaluator: Evaluator) extends Transformer with MLWritable {
 
 	/**
+	* @group param
+	*/
+	val inputs: BooleanParam = new BooleanParam(this, "inputs", "Copy input columns")
+
+	/**
 	 * @group param
 	 */
 	val targets: BooleanParam = new BooleanParam(this, "targets", "Produce columns for PMML target fields")
@@ -57,6 +62,16 @@ class PMMLTransformer(override val uid: String, val evaluator: Evaluator) extend
 	 */
 	val syntheticTargetName: Param[String] = new Param[String](this, "syntheticTargetName", "Name for a synthetic target field")
 
+
+	/**
+	 * @group getParam
+	 */
+	def getInputs: Boolean = $(inputs)
+
+	/**
+	 * @group setParam
+	 */
+	def setInputs(value: Boolean): this.type = set(inputs, value)
 
 	/**
 	 * @group getParam
@@ -102,6 +117,7 @@ class PMMLTransformer(override val uid: String, val evaluator: Evaluator) extend
 	def this(evaluator: Evaluator) = this(Identifiable.randomUID("pmmlTransformer"), evaluator)
 
 	setDefault(
+		inputs -> true,
 		targets -> true,
 		outputs -> true,
 		exceptionCol -> "exception",
@@ -110,7 +126,19 @@ class PMMLTransformer(override val uid: String, val evaluator: Evaluator) extend
 
 	override
 	def transformSchema(schema: StructType): StructType = {
-		StructType(schema.fields ++ pmmlTransformerFields)
+		StructType(inputFields(schema) ++ pmmlTransformerFields)
+	}
+
+	protected
+	def inputFields(schema: StructType): Seq[StructField] = {
+
+		if(getInputs){
+			schema.fields
+		} else
+
+		{
+			Seq.empty
+		}
 	}
 
 	protected
@@ -166,6 +194,18 @@ class PMMLTransformer(override val uid: String, val evaluator: Evaluator) extend
 
 	protected
 	def buildExceptionRow(row: Row, exception: Exception): Row
+
+	protected
+	def inputValues(row: Row): Seq[Any] = {
+
+		if(getInputs){
+			row.toSeq
+		} else
+
+		{
+			Seq.empty
+		}
+	}
 
 	protected
 	def pmmlValues(results: java.util.Map[String, _]): Seq[Any] = {

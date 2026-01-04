@@ -36,14 +36,14 @@ class FlatPMMLTransformer(override val uid: String, override val evaluator: Eval
 	protected def buildResultsRow(row: Row, results: java.util.Map[String, _]): Row = {
 		val exceptionValue: String = null
 
-		Row.fromSeq(row.toSeq ++ pmmlValues(results) :+ exceptionValue)
+		Row.fromSeq(inputValues(row) ++ pmmlValues(results) :+ exceptionValue)
 	}
 
 	override
 	protected def buildExceptionRow(row: Row, exception: Exception): Row = {
 		val exceptionValue: String = exception.getClass.getName + ": " + exception.getMessage
 
-		Row.fromSeq(row.toSeq ++ pmmlValues(null) :+ exceptionValue)
+		Row.fromSeq(inputValues(row) ++ pmmlValues(null) :+ exceptionValue)
 	}
 }
 

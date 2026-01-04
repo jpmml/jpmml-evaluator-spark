@@ -62,14 +62,14 @@ class NestedPMMLTransformer(override val uid: String, override val evaluator: Ev
 	protected def buildResultsRow(row: Row, results: java.util.Map[String, _]): Row = {
 		val exceptionValue: String = null
 
-		Row.fromSeq(row.toSeq :+ Row.fromSeq(pmmlValues(results)) :+ exceptionValue)
+		Row.fromSeq(inputValues(row) :+ Row.fromSeq(pmmlValues(results)) :+ exceptionValue)
 	}
 
 	override
 	protected def buildExceptionRow(row: Row, exception: Exception): Row = {
 		val exceptionValue: String = exception.getClass.getName + ": " + exception.getMessage
 
-		Row.fromSeq(row.toSeq :+ null :+ exceptionValue)
+		Row.fromSeq(inputValues(row) :+ null :+ exceptionValue)
 	}
 }
 
