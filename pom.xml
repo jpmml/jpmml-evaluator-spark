@@ -4,8 +4,8 @@
 
 	<parent>
 		<groupId>org.jpmml</groupId>
-		<artifactId>jpmml-evaluator</artifactId>
-		<version>1.7.6</version>
+		<artifactId>jpmml-parent</artifactId>
+		<version>1.0.11</version>
 	</parent>
 
 	<groupId>org.jpmml</groupId>
@@ -51,6 +51,7 @@
 		<scala.version>2.12.18</scala.version>
 		<scala.binary.version>2.12</scala.binary.version>
 		<spark.version>[3.0.0, 4.0.0)</spark.version>
+		<jpmml-evaluator.version>1.7.6</jpmml-evaluator.version>
 		<project.build.outputTimestamp>2026-01-01T12:32:53Z</project.build.outputTimestamp>
 	</properties>
 
@@ -58,6 +59,7 @@
 		<dependency>
 			<groupId>org.jpmml</groupId>
 			<artifactId>pmml-evaluator</artifactId>
+			<version>${jpmml-evaluator.version}</version>
 			<exclusions>
 				<exclusion>
 					<groupId>com.fasterxml.jackson.core</groupId>
@@ -68,6 +70,7 @@
 		<dependency>
 			<groupId>org.jpmml</groupId>
 			<artifactId>pmml-evaluator-metro</artifactId>
+			<version>${jpmml-evaluator.version}</version>
 		</dependency>
 
 		<dependency>
