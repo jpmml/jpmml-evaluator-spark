@@ -227,6 +227,18 @@ class PMMLTransformer(override val uid: String, val evaluator: Evaluator) extend
 		}
 	}
 
+	protected
+	def exceptionValue(exception: Exception): String = {
+
+		if(exception != null){
+			exception.getClass.getName + ": " + exception.getMessage
+		} else
+
+		{
+			null
+		}
+	}
+
 	override
 	def write: MLWriter = {
 		new PMMLTransformerWriter(this)
