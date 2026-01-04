@@ -24,7 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import org.apache.hadoop.fs.Path
 import org.apache.spark.ml.Transformer
-import org.apache.spark.ml.param.{Param, ParamMap}
+import org.apache.spark.ml.param.{BooleanParam, Param, ParamMap}
 import org.apache.spark.ml.util.{Identifiable, MLReader, MLWritable, MLWriter}
 import org.apache.spark.sql.{DataFrame, Dataset, Row}
 import org.apache.spark.ml.param.ParamPair
@@ -40,8 +40,38 @@ class PMMLTransformer(override val uid: String, val evaluator: Evaluator) extend
 	/**
 	 * @group param
 	 */
+	val targets: BooleanParam = new BooleanParam(this, "targets", "Produce columns for PMML target fields")
+
+	/**
+	 * @group param
+	 */
+	val outputs: BooleanParam = new BooleanParam(this, "outputs", "Produce columns for PMML output fields")
+
+	/**
+	 * @group param
+	 */
 	val exceptionCol: Param[String] = new Param[String](this, "exceptionCol", "Exception column name")
 
+
+	/**
+	 * @group getParam
+	 */
+	def getTargets: Boolean = $(targets)
+
+	/**
+	 * @group setParam
+	 */
+	def setTargets(value: Boolean): this.type = set(targets, value)
+
+	/**
+	 * @group getParam
+	 */
+	def getOutputs: Boolean = $(outputs)
+
+	/**
+	 * @group setParam
+	 */
+	def setOutputs(value: Boolean): this.type = set(outputs, value)
 
 	/**
 	 * @group getParam
@@ -57,6 +87,8 @@ class PMMLTransformer(override val uid: String, val evaluator: Evaluator) extend
 	def this(evaluator: Evaluator) = this(Identifiable.randomUID("pmmlTransformer"), evaluator)
 
 	setDefault(
+		targets -> true,
+		outputs -> true,
 		exceptionCol -> "exception"
 	)
 
@@ -151,12 +183,26 @@ class PMMLTransformer(override val uid: String, val evaluator: Evaluator) extend
 
 	private[spark]
 	def getTargetFields: Seq[TargetField] = {
-		evaluator.getTargetFields.asScala.toSeq
+
+		if(getTargets){
+			evaluator.getTargetFields.asScala.toSeq	
+		} else
+
+		{
+			Seq.empty
+		}
 	}
 
 	private[spark]
 	def getOutputFields: Seq[OutputField] = {
-		evaluator.getOutputFields.asScala.toSeq
+
+		if(getOutputs){
+			evaluator.getOutputFields.asScala.toSeq
+		} else
+
+		{
+			Seq.empty
+		}
 	}
 
 	protected

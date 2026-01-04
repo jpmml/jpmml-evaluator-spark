@@ -80,8 +80,11 @@ class NestedPMMLTransformerTest extends PMMLTransformerTest {
 
 		pmmlColumns should contain(pmmlTransformer.getResultsCol)
 
+		val targetsCount = if(pmmlTransformer.getTargets) 1 else 0
+		val outputsCount = if(pmmlTransformer.getOutputs) 3 else 0
+
 		val resultsType = pmmlSchema(pmmlTransformer.getResultsCol).dataType.asInstanceOf[StructType]
-		resultsType.fieldNames.size shouldBe (1 + 3)
+		resultsType.fieldNames.size shouldBe (targetsCount + outputsCount)
 
 		pmmlTransformer.getTargetFields.foreach {
 			targetField => checkPmmlField(resultsType(targetField.getName), StringType)
