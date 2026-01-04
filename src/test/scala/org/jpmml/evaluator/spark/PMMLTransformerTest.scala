@@ -47,20 +47,20 @@ class PMMLTransformerTest extends AnyFunSuite with Matchers with BeforeAndAfterA
 	override
 	def afterAll(): Unit = {
 		if (spark != null) {
-			spark.stop()
+			spark.stop
 		}
 	}
 
 	protected
 	def loadEvaluator(pmmlPath: String): Evaluator = {
-		val inputStream = getClass.getClassLoader.getResourceAsStream(pmmlPath)
+		val pmmlIs = getClass.getClassLoader.getResourceAsStream(pmmlPath)
 
 		try {
 			new LoadingModelEvaluatorBuilder()
-				.load(inputStream)
-				.build()
+				.load(pmmlIs)
+				.build
 		} finally {
-			inputStream.close
+			pmmlIs.close
 		}
 	}
 

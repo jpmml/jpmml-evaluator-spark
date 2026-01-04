@@ -37,6 +37,9 @@ import scala.jdk.CollectionConverters._
 abstract
 class PMMLTransformer(override val uid: String, val evaluator: Evaluator) extends Transformer with MLWritable {
 
+	/**
+	 * @group param
+	 */
 	val exceptionCol: Param[String] = new Param[String](this, "exceptionCol", "Exception column name")
 
 
@@ -48,10 +51,7 @@ class PMMLTransformer(override val uid: String, val evaluator: Evaluator) extend
 	/**
 	 * @group setParam
 	 */
-	def setExceptionCol(value: String): PMMLTransformer = {
-		set(exceptionCol, value)
-		this
-	}
+	def setExceptionCol(value: String): this.type = set(exceptionCol, value)
 
 
 	def this(evaluator: Evaluator) = this(Identifiable.randomUID("pmmlTransformer"), evaluator)

@@ -26,6 +26,9 @@ import org.jpmml.evaluator.{Evaluator, EvaluatorUtil}
 
 class NestedPMMLTransformer(override val uid: String, override val evaluator: Evaluator) extends PMMLTransformer(uid, evaluator) {
 
+	/**
+	 * @group param
+	 */
 	val resultsCol: Param[String] = new Param[String](this, "resultsCol", "Results column name")
 
 
@@ -37,10 +40,7 @@ class NestedPMMLTransformer(override val uid: String, override val evaluator: Ev
 	/**
 	 * @group setParam
 	 */
-	def setResultsCol(value: String): NestedPMMLTransformer = {
-		set(resultsCol, value)
-		this
-	}
+	def setResultsCol(value: String): this.type = set(resultsCol, value)
 
 
 	def this(evaluator: Evaluator) = this(Identifiable.randomUID("nestedPmmlTransformer"), evaluator)
