@@ -41,6 +41,8 @@ class NestedPMMLTransformerTest extends PMMLTransformerTest {
 	test("DecisionTreeIris with IrisInvalid"){
 		val evaluator = loadEvaluator("DecisionTreeIris.pmml")
 		val pmmlTransformer = createPmmlTransformer(evaluator)
+			.setResultsCol("x-results")
+			.setExceptionCol("x-exception")
 
 		val df = loadDataFrame("IrisInvalid.csv")
 

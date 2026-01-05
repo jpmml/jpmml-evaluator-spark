@@ -124,6 +124,8 @@ class PMMLTransformerTest extends AnyFunSuite with Matchers with BeforeAndAfterA
 		clonedPmmlTransformer.params.map(_.name).sorted shouldBe pmmlTransformer.params.map(_.name).sorted
 
 		clonedPmmlTransformer.evaluator should not be null
+
+		clonedPmmlTransformer.getExceptionCol shouldBe pmmlTransformer.getExceptionCol
 	}
 
 	protected def checkPmmlField(pmmlField: StructField, dataType: DataType): Unit = {

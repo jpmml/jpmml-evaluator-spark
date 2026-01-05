@@ -46,7 +46,7 @@ class NestedPMMLTransformer(override val uid: String, override val evaluator: Ev
 	def this(evaluator: Evaluator) = this(Identifiable.randomUID("nestedPmmlTransformer"), evaluator)
 
 	setDefault(
-		resultsCol -> "results"
+		resultsCol -> "pmmlResults"
 	)
 
 	override

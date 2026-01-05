@@ -120,7 +120,7 @@ class PMMLTransformer(override val uid: String, val evaluator: Evaluator) extend
 		inputs -> true,
 		targets -> true,
 		outputs -> true,
-		exceptionCol -> "exception",
+		exceptionCol -> "pmmlException",
 		syntheticTargetName -> "_target"
 	)
 
