@@ -14,6 +14,23 @@ This library provides an Apache Spark ML-compatible wrapper for the [JPMML-Evalu
 
 # Installation #
 
+### Compatibility matrix
+
+Active development branches:
+
+| JPMML-Evaluator-Spark branch | Apache Spark version | Scala version |
+|------------------------------|----------------------|---------------|
+| [`2.0.X`](https://github.com/jpmml/jpmml-evaluator-spark/tree/2.0.X) | 3.0.X through 3.5.X | 2.12.X |
+| [`master`](https://github.com/jpmml/jpmml-evaluator-spark/tree/master/) | 4.0.X and 4.1.X | 2.13.X |
+
+Archived development branches:
+
+| JPMML-Evaluator-Spark branch | Apache Spark version | Scala version |
+|------------------------------|----------------------|---------------|
+| [`1.4.X`](https://github.com/jpmml/jpmml-evaluator-spark/tree/1.4.X) | 3.0.X through 3.5.X | 2.12.X |
+
+### Library
+
 The JPMML-Evaluator-Spark library JAR file (together with accompanying Java source and Javadocs JAR files) is released via [Maven Central Repository](https://repo1.maven.org/maven2/org/jpmml/).
 
 The current version is **1.4.0** (1 January, 2026).
@@ -25,6 +42,22 @@ The current version is **1.4.0** (1 January, 2026).
 	<version>1.4.0</version>
 </dependency>
 ```
+
+### Runtime uber-JAR file
+
+Enter the project root directory and build using [Apache Maven](https://maven.apache.org/):
+
+```
+mvn clean install
+```
+
+The build produces two JAR files:
+* `target/jpmml-evaluator-spark-2.0-SNAPSHOT.jar` - Library JAR file.
+* `target/jpmml-evaluator-spark-runtime-2.0-SNAPSHOT.jar` - Runtime uber-JAR file.
+
+Use the library JAR file for integrating JPMML-Evaluator into a full-scale Apache Spark application. Note that you will need to solve a number of dependency conflicts in your build configuration file.
+
+Use the runtime uber-JAR file for _ad hoc_ tasks, such as adding JPMML-Evaluator to a Toree Jupyter notebook.
 
 # Usage #
 
