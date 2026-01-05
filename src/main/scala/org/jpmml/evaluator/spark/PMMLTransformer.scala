@@ -289,30 +289,30 @@ class PMMLTransformer(override val uid: String, val evaluator: Evaluator) extend
 	def buildColumnIndices(schema: StructType): Map[String, Int] = {
 		schema.fieldNames.zipWithIndex.toMap
 	}
-}
 
-class LazyRowMap (
-	private val row: Row,
-	private val columnIndices: Map[String, Int]
-) extends java.util.AbstractMap[String, Object] {
+	class LazyRowMap (
+		private val row: Row,
+		private val columnIndices: Map[String, Int]
+	) extends java.util.AbstractMap[String, Object] {
 
-	override
-	def get(key: Object): Object = {
-		val columnName = key.asInstanceOf[String]
+		override
+		def get(key: Object): Object = {
+			val columnName = key.asInstanceOf[String]
 
-		columnIndices.get(columnName) match {
-			case Some(index) => {
-				row.get(index).asInstanceOf[Object]
-			}
-			case None => {
-				null
+			columnIndices.get(columnName) match {
+				case Some(index) => {
+					row.get(index).asInstanceOf[Object]
+				}
+				case None => {
+					null
+				}
 			}
 		}
-	}
 
-	override
-	def entrySet(): java.util.Set[java.util.Map.Entry[String, Object]] = {
-		throw new UnsupportedOperationException
+		override
+		def entrySet(): java.util.Set[java.util.Map.Entry[String, Object]] = {
+			throw new UnsupportedOperationException
+		}
 	}
 }
 
