@@ -52,8 +52,8 @@ mvn clean install
 ```
 
 The build produces two JAR files:
-* `target/jpmml-evaluator-spark-2.0-SNAPSHOT.jar` - Library JAR file.
-* `target/jpmml-evaluator-spark-runtime-2.0-SNAPSHOT.jar` - Runtime uber-JAR file.
+* `target/jpmml-evaluator-spark-2.1-SNAPSHOT.jar` - Library JAR file.
+* `target/jpmml-evaluator-spark-runtime-2.1-SNAPSHOT.jar` - Runtime uber-JAR file.
 
 Use the library JAR file for integrating JPMML-Evaluator into a full-scale Apache Spark application. Note that you will need to solve a number of dependency conflicts in your build configuration file.
 
