@@ -33,13 +33,13 @@ Archived development branches:
 
 The JPMML-Evaluator-Spark library JAR file (together with accompanying Java source and Javadocs JAR files) is released via [Maven Central Repository](https://repo1.maven.org/maven2/org/jpmml/).
 
-The current version is **1.4.0** (1 January, 2026).
+The current version is **2.0.0** (5 January, 2026).
 
 ```xml
 <dependency>
 	<groupId>org.jpmml</groupId>
 	<artifactId>jpmml-evaluator-spark</artifactId>
-	<version>1.4.0</version>
+	<version>2.0.0</version>
 </dependency>
 ```
 
