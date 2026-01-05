@@ -113,8 +113,7 @@ class NestedPMMLTransformerTest extends PMMLTransformerTest {
 		checkExceptionField(pmmlSchema(pmmlTransformer.getExceptionCol))
 	}
 
-	protected
-	def checkResultsField(resultsField: StructField): Unit = {
+	protected def checkResultsField(resultsField: StructField): Unit = {
 		resultsField.dataType shouldBe an [StructType]
 		resultsField.nullable shouldBe true
 	}

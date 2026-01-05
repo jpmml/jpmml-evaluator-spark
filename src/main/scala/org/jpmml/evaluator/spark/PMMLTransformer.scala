@@ -129,8 +129,7 @@ class PMMLTransformer(override val uid: String, val evaluator: Evaluator) extend
 		StructType(inputFields(schema) ++ pmmlTransformerFields)
 	}
 
-	protected
-	def inputFields(schema: StructType): Seq[StructField] = {
+	protected def inputFields(schema: StructType): Seq[StructField] = {
 
 		if(getInputs){
 			schema.fields
@@ -141,11 +140,9 @@ class PMMLTransformer(override val uid: String, val evaluator: Evaluator) extend
 		}
 	}
 
-	protected
-	def pmmlTransformerFields(): Seq[StructField]
+	protected def pmmlTransformerFields(): Seq[StructField]
 
-	protected
-	def pmmlFields(): Seq[StructField] = {
+	protected def pmmlFields(): Seq[StructField] = {
 		val targetFields: Seq[StructField] = getTargetFields.map {
 			targetField => StructField(if(targetField.isSynthetic) getSyntheticTargetName else targetField.getName, toSparkDataType(targetField.getDataType), true)
 		}
@@ -157,8 +154,7 @@ class PMMLTransformer(override val uid: String, val evaluator: Evaluator) extend
 		targetFields ++ outputFields
 	}
 
-	protected
-	def exceptionField(): StructField = {
+	protected def exceptionField(): StructField = {
 		StructField(getExceptionCol, StringType, true)
 	}
 
@@ -189,14 +185,11 @@ class PMMLTransformer(override val uid: String, val evaluator: Evaluator) extend
 		df.sparkSession.createDataFrame(resultRdd, transformedSchema)
 	}
 
-	protected 
-	def buildResultsRow(row: Row, results: java.util.Map[String, _]): Row
+	protected def buildResultsRow(row: Row, results: java.util.Map[String, _]): Row
 
-	protected
-	def buildExceptionRow(row: Row, exception: Exception): Row
+	protected def buildExceptionRow(row: Row, exception: Exception): Row
 
-	protected
-	def inputValues(row: Row): Seq[Any] = {
+	protected def inputValues(row: Row): Seq[Any] = {
 
 		if(getInputs){
 			row.toSeq
@@ -207,8 +200,7 @@ class PMMLTransformer(override val uid: String, val evaluator: Evaluator) extend
 		}
 	}
 
-	protected
-	def pmmlValues(results: java.util.Map[String, _]): Seq[Any] = {
+	protected def pmmlValues(results: java.util.Map[String, _]): Seq[Any] = {
 
 		if(results != null){
 			val targetValues: Seq[Any] = getTargetFields.map {
@@ -227,8 +219,7 @@ class PMMLTransformer(override val uid: String, val evaluator: Evaluator) extend
 		}
 	}
 
-	protected
-	def exceptionValue(exception: Exception): String = {
+	protected def exceptionValue(exception: Exception): String = {
 
 		if(exception != null){
 			exception.getClass.getName + ": " + exception.getMessage
@@ -249,8 +240,7 @@ class PMMLTransformer(override val uid: String, val evaluator: Evaluator) extend
 		defaultCopy(extra)
 	}
 
-	private[spark]
-	def getTargetFields: Seq[TargetField] = {
+	private[spark] def getTargetFields: Seq[TargetField] = {
 
 		if(getTargets){
 			evaluator.getTargetFields.asScala.toSeq	
@@ -261,8 +251,7 @@ class PMMLTransformer(override val uid: String, val evaluator: Evaluator) extend
 		}
 	}
 
-	private[spark]
-	def getOutputFields: Seq[OutputField] = {
+	private[spark] def getOutputFields: Seq[OutputField] = {
 
 		if(getOutputs){
 			evaluator.getOutputFields.asScala.toSeq
@@ -273,8 +262,7 @@ class PMMLTransformer(override val uid: String, val evaluator: Evaluator) extend
 		}
 	}
 
-	protected
-	def toSparkDataType(pmmlDataType: org.dmg.pmml.DataType): DataType = {
+	protected def toSparkDataType(pmmlDataType: org.dmg.pmml.DataType): DataType = {
 		pmmlDataType match {
 			case org.dmg.pmml.DataType.STRING => StringType
 			case org.dmg.pmml.DataType.INTEGER => IntegerType
@@ -285,8 +273,7 @@ class PMMLTransformer(override val uid: String, val evaluator: Evaluator) extend
 		}
 	}
 
-	private 
-	def buildColumnIndices(schema: StructType): Map[String, Int] = {
+	private def buildColumnIndices(schema: StructType): Map[String, Int] = {
 		schema.fieldNames.zipWithIndex.toMap
 	}
 

@@ -34,8 +34,7 @@ class PMMLTransformerTest extends AnyFunSuite with Matchers with BeforeAndAfterA
 	var spark: SparkSession = _
 
 
-	protected
-	def createPmmlTransformer(evaluator: Evaluator): PMMLTransformer
+	protected def createPmmlTransformer(evaluator: Evaluator): PMMLTransformer
 
 	override
 	def beforeAll(): Unit = {
@@ -52,8 +51,7 @@ class PMMLTransformerTest extends AnyFunSuite with Matchers with BeforeAndAfterA
 		}
 	}
 
-	protected
-	def loadEvaluator(pmmlPath: String): Evaluator = {
+	protected def loadEvaluator(pmmlPath: String): Evaluator = {
 		val pmmlIs = getClass.getClassLoader.getResourceAsStream(pmmlPath)
 
 		try {
@@ -65,8 +63,7 @@ class PMMLTransformerTest extends AnyFunSuite with Matchers with BeforeAndAfterA
 		}
 	}
 
-	protected
-	def loadTargetlessEvaluator(pmmlPath: String, targetName: String): Evaluator = {
+	protected def loadTargetlessEvaluator(pmmlPath: String, targetName: String): Evaluator = {
 		val pmmlIs = getClass.getClassLoader.getResourceAsStream(pmmlPath)
 
 		try {
@@ -91,8 +88,7 @@ class PMMLTransformerTest extends AnyFunSuite with Matchers with BeforeAndAfterA
  		}
  	}
 
-	protected
-	def loadDataFrame(csvPath: String): DataFrame = {
+	protected def loadDataFrame(csvPath: String): DataFrame = {
 		val resource = getClass.getClassLoader.getResource(csvPath)
 
 		spark.read
@@ -102,8 +98,7 @@ class PMMLTransformerTest extends AnyFunSuite with Matchers with BeforeAndAfterA
 			.csv(resource.getPath)
 	}
 
-	protected
-	def checkPersistence(pmmlTransformer: PMMLTransformer): Unit = {
+	protected def checkPersistence(pmmlTransformer: PMMLTransformer): Unit = {
 		val emptyDf = spark.emptyDataFrame
 
 		val pipeline = new Pipeline().setStages(Array(pmmlTransformer))
@@ -131,14 +126,12 @@ class PMMLTransformerTest extends AnyFunSuite with Matchers with BeforeAndAfterA
 		clonedPmmlTransformer.evaluator should not be null
 	}
 
-	protected
-	def checkPmmlField(pmmlField: StructField, dataType: DataType): Unit = {
+	protected def checkPmmlField(pmmlField: StructField, dataType: DataType): Unit = {
 		pmmlField.dataType shouldBe dataType
 		pmmlField.nullable shouldBe true
 	}
 
-	protected
-	def checkExceptionField(exceptionField: StructField): Unit = {
+	protected def checkExceptionField(exceptionField: StructField): Unit = {
 		exceptionField.dataType shouldBe StringType
 		exceptionField.nullable shouldBe true
 	}
