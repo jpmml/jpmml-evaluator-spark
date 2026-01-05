@@ -47,7 +47,7 @@ class NestedPMMLTransformerTest extends PMMLTransformerTest {
 		checkDecisionTreeIris(pmmlTransformer, df, 147, 3)
 	}
 
-	def checkDecisionTreeIris(pmmlTransformer: NestedPMMLTransformer, df: DataFrame, successCount: Int, failureCount: Int): Unit = {
+	protected def checkDecisionTreeIris(pmmlTransformer: NestedPMMLTransformer, df: DataFrame, successCount: Int, failureCount: Int): Unit = {
 		checkPersistence(pmmlTransformer)
 
 		val schema = df.schema
@@ -68,7 +68,7 @@ class NestedPMMLTransformerTest extends PMMLTransformerTest {
 		pmmlDf.filter(pmmlDf(pmmlTransformer.getExceptionCol).isNull).count shouldBe successCount
 	}
 
-	def checkDecisionTreeIris(pmmlTransformer: NestedPMMLTransformer, schema: StructType, pmmlSchema: StructType): Unit = {
+	protected def checkDecisionTreeIris(pmmlTransformer: NestedPMMLTransformer, schema: StructType, pmmlSchema: StructType): Unit = {
 		val columns = schema.fieldNames
 		val pmmlColumns = pmmlSchema.fieldNames
 

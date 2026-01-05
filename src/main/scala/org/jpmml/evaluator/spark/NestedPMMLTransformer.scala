@@ -50,11 +50,11 @@ class NestedPMMLTransformer(override val uid: String, override val evaluator: Ev
 	)
 
 	override
-	def pmmlTransformerFields(): Seq[StructField] = {
+	protected def pmmlTransformerFields(): Seq[StructField] = {
 		Seq(resultsField, exceptionField)
 	}
 
-	def resultsField(): StructField = {
+	protected def resultsField(): StructField = {
 		StructField(getResultsCol, StructType(pmmlFields.toArray), true)
 	}
 

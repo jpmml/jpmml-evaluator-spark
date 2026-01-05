@@ -290,7 +290,7 @@ class PMMLTransformer(override val uid: String, val evaluator: Evaluator) extend
 		schema.fieldNames.zipWithIndex.toMap
 	}
 
-	class LazyRowMap (
+	private class LazyRowMap (
 		private val row: Row,
 		private val columnIndices: Map[String, Int]
 	) extends java.util.AbstractMap[String, Object] {

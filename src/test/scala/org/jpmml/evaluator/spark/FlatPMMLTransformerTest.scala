@@ -56,7 +56,7 @@ class FlatPMMLTransformerTest extends PMMLTransformerTest {
 		checkDecisionTreeIris(pmmlTransformer, df, "Species", 147, 3)
 	}
 
-	def checkDecisionTreeIris(pmmlTransformer: FlatPMMLTransformer, df: DataFrame, targetName: String, successCount: Int, failureCount: Int): Unit = {
+	protected def checkDecisionTreeIris(pmmlTransformer: FlatPMMLTransformer, df: DataFrame, targetName: String, successCount: Int, failureCount: Int): Unit = {
 		checkPersistence(pmmlTransformer)
 
 		val schema = df.schema
@@ -77,7 +77,7 @@ class FlatPMMLTransformerTest extends PMMLTransformerTest {
 		pmmlDf.filter(pmmlDf(pmmlTransformer.getExceptionCol).isNull).count shouldBe successCount
 	}
 
-	def checkDecisionTreeIris(pmmlTransformer: FlatPMMLTransformer, schema: StructType, pmmlSchema: StructType): Unit = {
+	protected def checkDecisionTreeIris(pmmlTransformer: FlatPMMLTransformer, schema: StructType, pmmlSchema: StructType): Unit = {
 		val columns = schema.fieldNames
 		val pmmlColumns = pmmlSchema.fieldNames
 
