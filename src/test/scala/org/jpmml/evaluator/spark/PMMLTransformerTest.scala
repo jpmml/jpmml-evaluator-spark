@@ -18,7 +18,7 @@
  */
 package org.jpmml.evaluator.spark
 
-import java.nio.file.{Files, Path}
+import java.nio.file.Files
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.types.{DataType, StringType, StructField}
@@ -125,16 +125,16 @@ class PMMLTransformerTest extends AnyFunSuite with Matchers with BeforeAndAfterA
 
 		clonedPmmlTransformer.evaluator should not be null
 
-		clonedPmmlTransformer.getExceptionCol shouldBe pmmlTransformer.getExceptionCol
+		val _ = clonedPmmlTransformer.getExceptionCol shouldBe pmmlTransformer.getExceptionCol
 	}
 
 	protected def checkPmmlField(pmmlField: StructField, dataType: DataType): Unit = {
 		pmmlField.dataType shouldBe dataType
-		pmmlField.nullable shouldBe true
+		val _ = pmmlField.nullable shouldBe true
 	}
 
 	protected def checkExceptionField(exceptionField: StructField): Unit = {
 		exceptionField.dataType shouldBe StringType
-		exceptionField.nullable shouldBe true
+		val _ = exceptionField.nullable shouldBe true
 	}
 }
