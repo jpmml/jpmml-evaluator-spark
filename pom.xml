@@ -48,7 +48,7 @@
 	</issueManagement>
 
 	<properties>
-		<scala.version>2.12.18</scala.version>
+		<scala.version>2.12.21</scala.version>
 		<scala.binary.version>2.12</scala.binary.version>
 		<spark.version>[3.0.0, 3.6.0)</spark.version>
 		<jpmml-evaluator.version>1.7.6</jpmml-evaluator.version>
@@ -60,12 +60,6 @@
 			<groupId>org.jpmml</groupId>
 			<artifactId>pmml-evaluator</artifactId>
 			<version>${jpmml-evaluator.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>com.fasterxml.jackson.core</groupId>
-					<artifactId>jackson-annotations</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.jpmml</groupId>
@@ -92,6 +86,14 @@
 			</exclusions>
 		</dependency>
 
+		<!-- Matches Spark 3.5.7 -->
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-slf4j2-impl</artifactId>
+			<version>2.20.0</version>
+			<scope>test</scope>
+		</dependency>
+		
 		<dependency>
 			<groupId>org.scalatest</groupId>
 			<artifactId>scalatest_${scala.binary.version}</artifactId>
@@ -112,8 +114,16 @@
 					</jvmArgs>
 					<release>${java.version}</release>
 					<scalaVersion>${scala.version}</scalaVersion>
+					<scalaCompatVersion>${scala.binary.version}</scalaCompatVersion>
 					<args>
 						<arg>-deprecation</arg>
+						<arg>-feature</arg>
+						<arg>-unchecked</arg>
+						<arg>-Xlint</arg>
+						<arg>-Ywarn-dead-code</arg>
+						<arg>-Ywarn-value-discard</arg>
+						<arg>-Ywarn-unused</arg>
+						<arg>-Xfatal-warnings</arg>
 					</args>
 				</configuration>
 				<executions>
@@ -184,6 +194,7 @@
 								<filter>
 									<artifact>*:*</artifact>
 									<excludes>
+										<exclude>module-info.class</exclude>
 										<exclude>META-INF/*.SF</exclude>
 										<exclude>META-INF/*.DSA</exclude>
 										<exclude>META-INF/*.RSA</exclude>
