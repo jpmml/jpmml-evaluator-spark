@@ -29,7 +29,7 @@ class FlatPMMLTransformer(override val uid: String, override val evaluator: Eval
 
 	override
 	def pmmlTransformerFields(): Seq[StructField] = {
-		pmmlFields :+ exceptionField
+		pmmlFields() :+ exceptionField()
 	}
 
 	override
@@ -46,7 +46,7 @@ class FlatPMMLTransformer(override val uid: String, override val evaluator: Eval
 object FlatPMMLTransformer extends MLReadable[FlatPMMLTransformer] {
 
 	override
-	def read(): MLReader[FlatPMMLTransformer] = {
+	def read: MLReader[FlatPMMLTransformer] = {
 		new PMMLTransformerReader[FlatPMMLTransformer]
 	}
 

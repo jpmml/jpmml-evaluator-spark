@@ -18,11 +18,11 @@
  */
 package org.jpmml.evaluator.spark
 
-import org.apache.spark.ml.param.{Param, ParamMap}
+import org.apache.spark.ml.param.Param
 import org.apache.spark.ml.util.{Identifiable, MLReadable, MLReader}
 import org.apache.spark.sql.Row
-import org.apache.spark.sql.types.{StructField, StructType, StringType}
-import org.jpmml.evaluator.{Evaluator, EvaluatorUtil}
+import org.apache.spark.sql.types.{StructField, StructType}
+import org.jpmml.evaluator.Evaluator
 
 class NestedPMMLTransformer(override val uid: String, override val evaluator: Evaluator) extends PMMLTransformer(uid, evaluator) {
 
@@ -51,11 +51,11 @@ class NestedPMMLTransformer(override val uid: String, override val evaluator: Ev
 
 	override
 	protected def pmmlTransformerFields(): Seq[StructField] = {
-		Seq(resultsField, exceptionField)
+		Seq(resultsField(), exceptionField())
 	}
 
 	protected def resultsField(): StructField = {
-		StructField(getResultsCol, StructType(pmmlFields.toArray), true)
+		StructField(getResultsCol, StructType(pmmlFields().toArray), true)
 	}
 
 	override
@@ -72,7 +72,7 @@ class NestedPMMLTransformer(override val uid: String, override val evaluator: Ev
 object NestedPMMLTransformer extends MLReadable[NestedPMMLTransformer] {
 
 	override
-	def read(): MLReader[NestedPMMLTransformer] = {
+	def read: MLReader[NestedPMMLTransformer] = {
 		new PMMLTransformerReader[NestedPMMLTransformer]
 	}
 

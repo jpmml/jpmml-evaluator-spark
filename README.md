@@ -7,13 +7,7 @@ PMML evaluator library for Apache Spark.
 
 This library provides an Apache Spark ML-compatible wrapper for the [JPMML-Evaluator](https://github.com/jpmml/jpmml-evaluator) library.
 
-# Prerequisites #
-
-* Apache Spark 3.0.X through 3.5.X, 4.0.X or 4.1.X.
-
-# Installation #
-
-### Compatibility matrix
+# Compatibility matrix #
 
 Active development branches:
 
@@ -27,6 +21,19 @@ Archived development branches:
 | JPMML-Evaluator-Spark branch | Apache Spark version | Scala version |
 |------------------------------|----------------------|---------------|
 | [`1.4.X`](https://github.com/jpmml/jpmml-evaluator-spark/tree/1.4.X) | 3.0.X through 3.5.X | 2.12.X |
+
+# Prerequisites #
+
+* Apache Spark 3.0.X through 3.5.X, 4.0.X or 4.1.X.
+
+# Installation #
+
+The JPMML-Evaluator-Spark is distributed in two variants:
+
+* Library JAR file. Suitable for integrating JPMML-Evaluator into a full-scale Apache Spark application.
+* Runtime uber-JAR file. Suitable for _ad hoc_ tasks, such as adding JPMML-Evaluator to Apache Toree-powered Jupyter notebook.
+
+## Binary distribution
 
 ### Library
 
@@ -44,6 +51,10 @@ The current version is **2.1.0** (6 January, 2026).
 
 ### Runtime uber-JAR file
 
+The JPMML-Evaluator-Spark runtime uber-JAR file is released via the [GitHub releases page](https://github.com/jpmml/jpmml-evaluator-spark/releases).
+
+## Source distribution
+
 Enter the project root directory and build using [Apache Maven](https://maven.apache.org/):
 
 ```
@@ -53,10 +64,6 @@ mvn clean install
 The build produces two JAR files:
 * `target/jpmml-evaluator-spark-2.1-SNAPSHOT.jar` - Library JAR file.
 * `target/jpmml-evaluator-spark-runtime-2.1-SNAPSHOT.jar` - Runtime uber-JAR file.
-
-Use the library JAR file for integrating JPMML-Evaluator into a full-scale Apache Spark application. Note that you will need to solve a number of dependency conflicts in your build configuration file.
-
-Use the runtime uber-JAR file for _ad hoc_ tasks, such as adding JPMML-Evaluator to a Toree Jupyter notebook.
 
 # Usage #
 
@@ -73,13 +80,13 @@ val pmmlIs: InputStream = ???
 val evaluator: Evaluator = try {
 	new LoadingModelEvaluatorBuilder()
 		.load(pmmlIs)
-		.build
+		.build()
 } finally {
-	pmmlIs.close
+	pmmlIs.close()
 }
 
 // Perform self-check
-evaluator.verify
+evaluator.verify()
 ```
 
 Wrap this `Evaluator` object into an `org.jpmml.evaluator.spark.PMMLTransformer` object to make it look and behave like a regular Apache Spark ML transformer.
@@ -111,7 +118,7 @@ val transformedDf = pmmlTransformer.transform(df)
 
 Evaluation exceptions, if any, are caught and stored in a dedicated exceptions column.
 
-## API
+## Public API
 
 ### `PMMLTransformer`
 
@@ -120,8 +127,8 @@ Abstract base class that provides common parameters and functionality.
 Parameters:
 
 * `inputs: BooleanParam = true`. Copy all columns from the input dataset to the transformed dataset?
-* `targets: BooleanParam = true`. Produce columns for PMML target fields (ie. primary results)?
-* `outputs: BooleanParam = true`. Produce columns for PMML output fields (ie. secondary results)?
+* `targets: BooleanParam = true`. Produce columns for PMML target fields?
+* `outputs: BooleanParam = true`. Produce columns for PMML output fields?
 * `exceptionCol: Param[String] = "pmmlException"`. The name of the exceptions column.
 * `syntheticTargetName: Param[String] = "_target"`. The substitute name for a synthetic target field column (the default name for a synthetic target field is `null`, which is not a valid Apache Spark column name).
 

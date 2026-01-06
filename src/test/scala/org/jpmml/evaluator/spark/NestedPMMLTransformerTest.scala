@@ -59,15 +59,15 @@ class NestedPMMLTransformerTest extends PMMLTransformerTest {
 
 		val pmmlDf = pmmlTransformer.transform(df)
 
-		pmmlDf.count shouldBe df.count
+		pmmlDf.count() shouldBe df.count()
 
 		checkDecisionTreeIris(pmmlTransformer, df.schema, pmmlDf.schema)
 
-		pmmlDf.filter(pmmlDf(pmmlTransformer.getResultsCol).isNotNull).count shouldBe successCount
-		pmmlDf.filter(pmmlDf(pmmlTransformer.getResultsCol).isNull).count shouldBe failureCount
+		pmmlDf.filter(pmmlDf(pmmlTransformer.getResultsCol).isNotNull).count() shouldBe successCount
+		pmmlDf.filter(pmmlDf(pmmlTransformer.getResultsCol).isNull).count() shouldBe failureCount
 
-		pmmlDf.filter(pmmlDf(pmmlTransformer.getExceptionCol).isNotNull).count shouldBe failureCount
-		pmmlDf.filter(pmmlDf(pmmlTransformer.getExceptionCol).isNull).count shouldBe successCount
+		pmmlDf.filter(pmmlDf(pmmlTransformer.getExceptionCol).isNotNull).count() shouldBe failureCount
+		val _ = pmmlDf.filter(pmmlDf(pmmlTransformer.getExceptionCol).isNull).count() shouldBe successCount
 	}
 
 	protected def checkDecisionTreeIris(pmmlTransformer: NestedPMMLTransformer, schema: StructType, pmmlSchema: StructType): Unit = {
@@ -117,6 +117,6 @@ class NestedPMMLTransformerTest extends PMMLTransformerTest {
 
 	protected def checkResultsField(resultsField: StructField): Unit = {
 		resultsField.dataType shouldBe an [StructType]
-		resultsField.nullable shouldBe true
+		val _ = resultsField.nullable shouldBe true
 	}
 }

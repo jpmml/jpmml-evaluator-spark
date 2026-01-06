@@ -18,7 +18,7 @@
  */
 package org.jpmml.evaluator.spark
 
-import java.nio.file.{Files, Path}
+import java.nio.file.Files
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.types.{DataType, StringType, StructField}
@@ -38,16 +38,16 @@ class PMMLTransformerTest extends AnyFunSuite with Matchers with BeforeAndAfterA
 
 	override
 	def beforeAll(): Unit = {
-		spark = SparkSession.builder
+		spark = SparkSession.builder()
 			.master("local[*]")
 			.appName("PMMLTransformerTest")
-			.getOrCreate
+			.getOrCreate()
 	}
 
 	override
 	def afterAll(): Unit = {
 		if (spark != null) {
-			spark.stop
+			spark.stop()
 		}
 	}
 
@@ -57,7 +57,7 @@ class PMMLTransformerTest extends AnyFunSuite with Matchers with BeforeAndAfterA
 		try {
 			new LoadingModelEvaluatorBuilder()
 				.load(pmmlIs)
-				.build
+				.build()
 		} finally {
 			pmmlIs.close
 		}
@@ -82,7 +82,7 @@ class PMMLTransformerTest extends AnyFunSuite with Matchers with BeforeAndAfterA
 				.setVisitors(null) // XXX
 				.load(pmmlIs)
 				.transform(transformer)
-				.build
+				.build()
 		} finally {
 			pmmlIs.close
  		}
@@ -107,7 +107,7 @@ class PMMLTransformerTest extends AnyFunSuite with Matchers with BeforeAndAfterA
 		val tmpDir = Files.createTempDirectory("pmmlTransformer-")
 
 		pipelineModel.write
-			.overwrite
+			.overwrite()
 			.save(tmpDir.toString)
 
 		val clonedPipelineModel = PipelineModel.load(tmpDir.toString)
@@ -120,21 +120,21 @@ class PMMLTransformerTest extends AnyFunSuite with Matchers with BeforeAndAfterA
 		clonedPmmlTransformer.getClass shouldBe pmmlTransformer.getClass
 		clonedPmmlTransformer.uid shouldBe pmmlTransformer.uid
 
-		clonedPmmlTransformer.extractParamMap.size shouldBe pmmlTransformer.extractParamMap.size
+		clonedPmmlTransformer.extractParamMap().size shouldBe pmmlTransformer.extractParamMap().size
 		clonedPmmlTransformer.params.map(_.name).sorted shouldBe pmmlTransformer.params.map(_.name).sorted
 
 		clonedPmmlTransformer.evaluator should not be null
 
-		clonedPmmlTransformer.getExceptionCol shouldBe pmmlTransformer.getExceptionCol
+		val _ = clonedPmmlTransformer.getExceptionCol shouldBe pmmlTransformer.getExceptionCol
 	}
 
 	protected def checkPmmlField(pmmlField: StructField, dataType: DataType): Unit = {
 		pmmlField.dataType shouldBe dataType
-		pmmlField.nullable shouldBe true
+		val _ = pmmlField.nullable shouldBe true
 	}
 
 	protected def checkExceptionField(exceptionField: StructField): Unit = {
 		exceptionField.dataType shouldBe StringType
-		exceptionField.nullable shouldBe true
+		val _ = exceptionField.nullable shouldBe true
 	}
 }
