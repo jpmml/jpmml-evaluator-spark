@@ -9,8 +9,7 @@ This library provides an Apache Spark ML-compatible wrapper for the [JPMML-Evalu
 
 # Prerequisites #
 
-* Java Platform, Standard Edition 11 or newer.
-* Apache Spark 3.0.X through 3.5.X.
+* Apache Spark 3.0.X through 3.5.X, 4.0.X or 4.1.X.
 
 # Installation #
 

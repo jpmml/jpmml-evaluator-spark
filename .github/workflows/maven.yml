@@ -10,11 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: [ 11, 17 ]
-        spark: [ '3.0.3', '3.4.4', '3.5.7' ]
-        exclude:
-          - java: 17
-            spark: '3.0.3'
+        java: [ 17, 21 ]
+        spark: [ '4.0.1', '4.1.7' ]
 
     steps:
     - uses: actions/checkout@v4
