@@ -50,7 +50,7 @@
 	<properties>
 		<scala.version>2.12.18</scala.version>
 		<scala.binary.version>2.12</scala.binary.version>
-		<spark.version>[3.0.0, 4.0.0)</spark.version>
+		<spark.version>[3.0.0, 3.6.0)</spark.version>
 		<jpmml-evaluator.version>1.7.6</jpmml-evaluator.version>
 		<project.build.outputTimestamp>2026-01-05T21:43:04Z</project.build.outputTimestamp>
 	</properties>
