@@ -51,11 +51,11 @@ class NestedPMMLTransformer(override val uid: String, override val evaluator: Ev
 
 	override
 	protected def pmmlTransformerFields(): Seq[StructField] = {
-		Seq(resultsField, exceptionField)
+		Seq(resultsField(), exceptionField())
 	}
 
 	protected def resultsField(): StructField = {
-		StructField(getResultsCol, StructType(pmmlFields.toArray), true)
+		StructField(getResultsCol, StructType(pmmlFields().toArray), true)
 	}
 
 	override
@@ -72,7 +72,7 @@ class NestedPMMLTransformer(override val uid: String, override val evaluator: Ev
 object NestedPMMLTransformer extends MLReadable[NestedPMMLTransformer] {
 
 	override
-	def read(): MLReader[NestedPMMLTransformer] = {
+	def read: MLReader[NestedPMMLTransformer] = {
 		new PMMLTransformerReader[NestedPMMLTransformer]
 	}
 

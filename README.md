@@ -73,13 +73,13 @@ val pmmlIs: InputStream = ???
 val evaluator: Evaluator = try {
 	new LoadingModelEvaluatorBuilder()
 		.load(pmmlIs)
-		.build
+		.build()
 } finally {
-	pmmlIs.close
+	pmmlIs.close()
 }
 
 // Perform self-check
-evaluator.verify
+evaluator.verify()
 ```
 
 Wrap this `Evaluator` object into an `org.jpmml.evaluator.spark.PMMLTransformer` object to make it look and behave like a regular Apache Spark ML transformer.

@@ -126,13 +126,13 @@ class PMMLTransformer(override val uid: String, val evaluator: Evaluator) extend
 
 	override
 	def transformSchema(schema: StructType): StructType = {
-		StructType(inputFields(schema) ++ pmmlTransformerFields)
+		StructType(inputFields(schema) ++ pmmlTransformerFields())
 	}
 
 	protected def inputFields(schema: StructType): Seq[StructField] = {
 
 		if(getInputs){
-			schema.fields
+			schema.fields.toIndexedSeq
 		} else
 
 		{
@@ -160,7 +160,7 @@ class PMMLTransformer(override val uid: String, val evaluator: Evaluator) extend
 
 	override
 	def transform(dataset: Dataset[_]): DataFrame = {
-		val df = dataset.toDF
+		val df = dataset.toDF()
 		val transformedSchema = transformSchema(df.schema)
 		val columnIndices = buildColumnIndices(df.schema)
 
@@ -312,7 +312,7 @@ class PMMLTransformerWriter(instance: PMMLTransformer) extends MLWriter {
 		val metadataPath = new Path(path, "metadata")
 		val evaluatorPath = new Path(path, "evaluator")
 
-		val paramMap = instance.extractParamMap.toSeq.map {
+		val paramMap = instance.extractParamMap().toSeq.map {
 			case ParamPair(p, v) => p.name -> p.jsonEncode(v)
 		}.toMap
 

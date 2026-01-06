@@ -66,15 +66,15 @@ class FlatPMMLTransformerTest extends PMMLTransformerTest {
 
 		val pmmlDf = pmmlTransformer.transform(df)
 
-		pmmlDf.count shouldBe df.count
+		pmmlDf.count() shouldBe df.count()
 
 		checkDecisionTreeIris(pmmlTransformer, df.schema, pmmlDf.schema)
 
-		pmmlDf.filter(pmmlDf(targetName).isNotNull).count shouldBe successCount
-		pmmlDf.filter(pmmlDf(targetName).isNull).count shouldBe failureCount
+		pmmlDf.filter(pmmlDf(targetName).isNotNull).count() shouldBe successCount
+		pmmlDf.filter(pmmlDf(targetName).isNull).count() shouldBe failureCount
 
-		pmmlDf.filter(pmmlDf(pmmlTransformer.getExceptionCol).isNotNull).count shouldBe failureCount
-		pmmlDf.filter(pmmlDf(pmmlTransformer.getExceptionCol).isNull).count shouldBe successCount
+		pmmlDf.filter(pmmlDf(pmmlTransformer.getExceptionCol).isNotNull).count() shouldBe failureCount
+		pmmlDf.filter(pmmlDf(pmmlTransformer.getExceptionCol).isNull).count() shouldBe successCount
 	}
 
 	protected def checkDecisionTreeIris(pmmlTransformer: FlatPMMLTransformer, schema: StructType, pmmlSchema: StructType): Unit = {
