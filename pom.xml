@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.jpmml</groupId>
 		<artifactId>jpmml-parent</artifactId>
-		<version>1.0.11</version>
+		<version>1.0.13</version>
 	</parent>
 
 	<groupId>org.jpmml</groupId>
@@ -52,7 +52,7 @@
 		<scala.version>2.13.18</scala.version>
 		<scala.binary.version>2.13</scala.binary.version>
 		<spark.version>[4.0.0, 4.2.0)</spark.version>
-		<jpmml-evaluator.version>1.7.6</jpmml-evaluator.version>
+		<jpmml-evaluator.version>1.7.7</jpmml-evaluator.version>
 		<project.build.outputTimestamp>2026-01-06T18:52:51Z</project.build.outputTimestamp>
 	</properties>
 
