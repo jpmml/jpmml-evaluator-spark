@@ -14,7 +14,7 @@ Active development branches:
 | JPMML-Evaluator-Spark branch | Apache Spark version | Scala version |
 |------------------------------|----------------------|---------------|
 | [`2.0.X`](https://github.com/jpmml/jpmml-evaluator-spark/tree/2.0.X) | 3.0.X through 3.5.X | 2.12.X |
-| [`master`](https://github.com/jpmml/jpmml-evaluator-spark/tree/master/) | 4.0.X and 4.1.X | 2.13.X |
+| [`master`](https://github.com/jpmml/jpmml-evaluator-spark/tree/master/) | 4.0.X through 4.2.X | 2.13.X |
 
 Archived development branches:
 
@@ -24,7 +24,7 @@ Archived development branches:
 
 # Prerequisites #
 
-* Apache Spark 3.0.X through 3.5.X, 4.0.X or 4.1.X.
+* Apache Spark 3.0.X through 3.5.X, 4.0.X, 4.1.X or 4.2.X.
 
 # Installation #
 
@@ -71,7 +71,7 @@ The build produces two JAR files:
 
 ## Workflow
 
-Build a `org.jpmml.evaluator.Evaluator` object that will do the actual evaluation work:
+Build an `org.jpmml.evaluator.Evaluator` object that will do the actual evaluation work:
 
 ```scala
 import java.io.InputStream
