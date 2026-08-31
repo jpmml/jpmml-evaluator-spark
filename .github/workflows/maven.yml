@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         java: [ 17, 21 ]
-        spark: [ '4.0.1', '4.1.0', '4.2.0' ]
+        spark: [ '4.0.4', '4.1.3', '4.2.0' ]
 
     steps:
     - uses: actions/checkout@v6
